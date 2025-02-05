@@ -12,20 +12,13 @@ void delay()
 void init_uart()
 {
     /* timer */
-    /* f = 20MHz
-     * f_timer = 20MHz / 16 = 3.33MHz
-     * baud = 115200
-     * ticks = f_timer / baud = 29
-     * TH1 = 0xFF - ticks = 226
-     */
-    TMOD = 0x20;    /* timer 1 in mode 2 (8-bit overflow) */
-    TH1 = 0xF5;     /* timer reload value */
+    TMOD  = 0x20;   /* timer 1 in mode 2 (8-bit overflow) */
+    TH1   = 0xF5;   /* timer reload value */
     PCON |= 0x80;
+    TCON |= 0x40;
 
     /* uart */
-    SCON = 0x50;     /* mode 1 (8 bit tx/rx) */
-
-    TR1 = 1;
+    SCON  = 0x50;    /* mode 1 (8 bit tx/rx) */
 }
 
 
