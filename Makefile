@@ -1,21 +1,16 @@
 # Makefile for SDCC with AT89S51 (outputting only .hex file)
 
-# Compiler and flags
 CC = sdcc
 CFLAGS = -mmcs51
 
-# Source and output files
-SRC = main.c
-OUT = nand
+all: nand.hex
 
-# Default target
-all: $(OUT)
+nand.hex: uart.rel
+	$(CC) -o nand.hex main.c uart.rel
 
-# Rule to build the .hex file
-$(OUT): $(SRC)
-	$(CC) -o $(OUT).hex $(CFLAGS) $(SRC)
+uart.rel: uart.c uart.h
+	$(CC) $(CFLAGS) -c -o uart.rel uart.c
 
-# Clean up generated files (e.g., .asm, .cdb, .ihx, etc.)
 clean:
-	rm -f $(OUT).hex $(OUT).asm $(OUT).cdb $(OUT).ihx $(OUT).lst $(OUT).lk  $(OUT).map  $(OUT).mem  $(OUT).rel  $(OUT).rst  $(OUT).sym
+	rm -f *.hex *.o *.asm *.cdb *.ihx *.lst *.lk  *.map  *.mem  *.rel  *.rst  *.sym
 
