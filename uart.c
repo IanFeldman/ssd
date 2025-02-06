@@ -23,8 +23,7 @@ void uart_print(char *string)
     const char *str = string;
     if (string == NULL)
     {
-        str = "Print string is null!";
-        return;
+        str = "Error print string is null";
     }
 
     for (int i = 0; i < strlen(str); i++)
@@ -39,7 +38,7 @@ void uart_print_esc(char *code)
 {
     if (code == NULL)
     {
-        uart_print("Escape code is null!");
+        uart_print("Error escape code is null");
         return;
     }
     uart_print_char(ESC_CHAR);

@@ -17,8 +17,6 @@ void main()
 
     while(1)
     {
-        uart_print("Hello, world!");
-        uart_print_esc(NEW_LINE);
         delay();
     }   
 }
