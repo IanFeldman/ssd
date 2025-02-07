@@ -54,3 +54,11 @@ void uart_print_char(char ch)
     TI = 0;
 }
 
+
+void uart_print_hex(char val)
+{
+    static char hex_chars[] = "0123456789ABCDEF";
+    uart_print_char(hex_chars[val >> 4]);
+    uart_print_char(hex_chars[val & 0x0F]);
+}
+
