@@ -29,6 +29,7 @@ void flash_program(char data, address_t *address)
 {
     /* enable chip */
     CTRL_PORT &= ~CHIP_ENABLE;
+    flash_delay(TIME_QUICK);
 
     /* three byte sequence for software data protection */
     static address_t sdp_addr1 = { 0x00, 0x55, 0x55 };
@@ -39,16 +40,19 @@ void flash_program(char data, address_t *address)
     CTRL_PORT &= ~WRITE_ENABLE;    /* latch address */
     DATA_PORT = 0xAA;
     CTRL_PORT |= WRITE_ENABLE;    /* latch data */
+    flash_delay(TIME_QUICK);
 
     flash_set_address(&sdp_addr2);
     CTRL_PORT &= ~WRITE_ENABLE;
     DATA_PORT = 0x55;
     CTRL_PORT |= WRITE_ENABLE;
+    flash_delay(TIME_QUICK);
 
     flash_set_address(&sdp_addr3);
     CTRL_PORT &= ~WRITE_ENABLE;
     DATA_PORT = 0xA0;
     CTRL_PORT |= WRITE_ENABLE;
+    flash_delay(TIME_QUICK);
 
     /* begin programming */
     flash_set_address(address);
@@ -57,7 +61,7 @@ void flash_program(char data, address_t *address)
     CTRL_PORT |= WRITE_ENABLE;
 
     /* wait at least 20us */
-    flash_delay();
+    flash_delay(TIME_QUICK);
 
     /* restore */
     flash_init();
@@ -89,11 +93,11 @@ void flash_erase(address_t *addr)
 
 
 /* Delay about half a second */
-void flash_delay()
+void flash_delay(char count)
 {
     for (char i = 0; i < 0xFF; i++)
     {
-        for (char j = 0; j < 0xFF; j++);
+        for (char j = 0; j < count; j++);
     }
 }
 

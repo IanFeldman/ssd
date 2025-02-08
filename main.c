@@ -10,7 +10,7 @@ void main()
     /* reset screen */
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
-    flash_delay();
+    flash_delay(0xFF);
 
     /* create address */
     address_t addr = { 0x00, 0xB0, 0x20 };
