@@ -25,8 +25,21 @@ void flash_set_address(address_t *address)
 
 
 /* Write to flash. */
-void flash_write()
+void flash_program(char data, address_t *address)
 {
+    /* latch address */
+    flash_set_address(address);
+    P3 &= ~(CHIP_ENABLE | OUTPUT_ENABLE);
+
+    /* latch data */
+    DATA_PORT = data;
+    P3 |= WRITE_ENABLE;
+
+    /* wait at least 20us */
+    flash_delay();
+
+    /* restore */
+    flash_init();
 }
 
 
@@ -48,5 +61,15 @@ char flash_read(address_t *address)
 /* Clear bytes. */
 void flash_erase()
 {
+}
+
+
+/* Delay about half a second */
+void flash_delay()
+{
+    for (char i = 0; i < 0xFF; i++)
+    {
+        for (char j = 0; j < 0xFF; j++);
+    }
 }
 

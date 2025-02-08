@@ -1,14 +1,5 @@
-#include "uart.h"
 #include "flash.h"
-
-void delay()
-{
-    for (int i = 0; i < 0xFF; i++)
-    {
-        for (int j = 0; j < 0xFF; j++);
-    }
-}
-
+#include "uart.h"
 
 void main()
 {
@@ -18,7 +9,7 @@ void main()
 
     flash_init();
 
-    delay();
+    flash_delay();
 
     address_t addr = { 0x00, 0x00, 0x00 };
     char data = flash_read(&addr);
@@ -30,7 +21,7 @@ void main()
     {
         uart_print("running...");
         uart_print_esc(NEW_LINE);
-        delay();
+        flash_delay();
     }   
 }
 
