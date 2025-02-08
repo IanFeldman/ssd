@@ -4,7 +4,7 @@
 /* Initialize the chip to be disabled. */
 void flash_init()
 {
-    P3 |= CHIP_ENABLE | OUTPUT_ENABLE | WRITE_ENABLE;
+    CTRL_PORT |= CHIP_ENABLE | OUTPUT_ENABLE | WRITE_ENABLE;
 }
 
 
@@ -24,16 +24,37 @@ void flash_set_address(address_t *address)
 }
 
 
-/* Write to flash. */
+/* Write to flash */
 void flash_program(char data, address_t *address)
 {
-    /* latch address */
-    flash_set_address(address);
-    P3 &= ~(CHIP_ENABLE | OUTPUT_ENABLE);
+    /* enable chip */
+    CTRL_PORT &= ~CHIP_ENABLE;
 
-    /* latch data */
+    /* three byte sequence for software data protection */
+    static address_t sdp_addr1 = { 0x00, 0x55, 0x55 };
+    static address_t sdp_addr2 = { 0x00, 0x2A, 0xAA };
+    static address_t sdp_addr3 = { 0x00, 0x55, 0x55 };
+
+    flash_set_address(&sdp_addr1);
+    CTRL_PORT &= ~WRITE_ENABLE;    /* latch address */
+    DATA_PORT = 0xAA;
+    CTRL_PORT |= WRITE_ENABLE;    /* latch data */
+
+    flash_set_address(&sdp_addr2);
+    CTRL_PORT &= ~WRITE_ENABLE;
+    DATA_PORT = 0x55;
+    CTRL_PORT |= WRITE_ENABLE;
+
+    flash_set_address(&sdp_addr3);
+    CTRL_PORT &= ~WRITE_ENABLE;
+    DATA_PORT = 0xA0;
+    CTRL_PORT |= WRITE_ENABLE;
+
+    /* begin programming */
+    flash_set_address(address);
+    CTRL_PORT &= ~WRITE_ENABLE;
     DATA_PORT = data;
-    P3 |= WRITE_ENABLE;
+    CTRL_PORT |= WRITE_ENABLE;
 
     /* wait at least 20us */
     flash_delay();
@@ -43,13 +64,13 @@ void flash_program(char data, address_t *address)
 }
 
 
-/* Read from address. */
+/* Read from address */
 char flash_read(address_t *address)
 {
     flash_set_address(address);
 
     /* read */
-    P3 &= ~(CHIP_ENABLE | OUTPUT_ENABLE);
+    CTRL_PORT &= ~(CHIP_ENABLE | OUTPUT_ENABLE);
     char data = DATA_PORT;
 
     /* restore and return */
@@ -58,9 +79,12 @@ char flash_read(address_t *address)
 }
 
 
-/* Clear bytes. */
-void flash_erase()
+/* Clear bytes */
+void flash_erase(address_t *addr)
 {
+    flash_set_address(addr);
+
+    CTRL_PORT &= ~(CHIP_ENABLE | WRITE_ENABLE);
 }
 
 
