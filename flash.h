@@ -17,6 +17,7 @@ typedef struct {
 
 void flash_init();
 void flash_set_address(address_t *address);
+void flash_sdp(address_t *addresses, char *data, char count);
 void flash_program(char data, address_t *address);
 char flash_read(address_t *address);
 void flash_erase(address_t *address);
