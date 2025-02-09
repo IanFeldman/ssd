@@ -13,17 +13,21 @@ void main()
     flash_delay(0xFF);
 
     /* create address */
-    address_t addr = { 0x00, 0xB0, 0x20 };
+    // address_t addr = { 0x00, 0xB0, 0x20 };
 
     /* program */
-    flash_program(0xAB, &addr);
+    // flash_program(0xAB, &addr);
 
     /* read */
+    /*
     char data = flash_read(&addr);
     uart_print("Read: 0x");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
+    */
 
-    return;
+    while (1)
+    {
+    }
 }
 

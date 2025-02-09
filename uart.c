@@ -12,7 +12,11 @@ void uart_init()
     TCON |= 0x40;   /* enable timer */
 
     /* uart */
-    SCON  = 0x50;    /* mode 1 (8 bit tx/rx) */
+    SCON  = 0x50;   /* mode 1 (8 bit tx/rx) + enable receive */
+
+    /* interrupts */
+    EA = 1;
+    ES = 1;
 }
 
 
@@ -46,7 +50,7 @@ void uart_print_esc(char *code)
 }
 
 
-/* Print a single character over serial. */
+/* Print a single character over serial */
 void uart_print_char(char ch)
 {
     SBUF = ch;
@@ -55,10 +59,22 @@ void uart_print_char(char ch)
 }
 
 
+/* Print value as hex */
 void uart_print_hex(char val)
 {
     static char hex_chars[] = "0123456789ABCDEF";
     uart_print_char(hex_chars[val >> 4]);
     uart_print_char(hex_chars[val & 0x0F]);
+}
+
+
+/* Interrupt that receives serial data */
+void uart_isr() __interrupt (4)
+{
+    if (RI)
+    {
+        RI = 0;
+        uart_print_char(SBUF);
+    }
 }
 
