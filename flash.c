@@ -125,3 +125,27 @@ void flash_delay(char count)
     }
 }
 
+
+char flash_get_id()
+{
+    /* software id entry */
+    static const char sdp_data[3] = {
+        0xAA, 0x55, 0x90
+    };
+    const address_t sdp_addresses[3] = {
+        { 0x00, 0x55, 0x55 },
+        { 0x00, 0x2A, 0xAA },
+        { 0x00, 0x55, 0x55 }
+    };
+    flash_sdp(sdp_addresses, sdp_data, 3);
+
+    char id;
+    address_t id_addr = { 0x00, 0x00, 0x01 };
+    id = flash_read(&id_addr);
+
+    /* restore */
+    flash_init();
+
+    return id;
+}
+
