@@ -14,23 +14,17 @@ void main()
     uart_print_esc(NEW_LINE);
     flash_delay(0xFF);
 
-    char id = flash_get_id();
-    uart_print("Id: 0x");
-    uart_print_hex(id);
+    address_t addr = { 0x00, 0x00, 0xAB };
+    flash_erase(&addr);
+    flash_program(0xBF, &addr);
+
+    flash_delay(0xFF);
+
+    char data = flash_read(&addr);
+    uart_print("read: 0x");
+    uart_print_hex(data);
     uart_print_esc(NEW_LINE);
 
-    while(1) {}
-
-    /*
-    char data;
-    for (char i = 0; i < 0xFF; i++)
-    {
-        address_t addr = { 0x00, 0x00, i };
-        data = flash_read(&addr);
-        uart_print("Read: 0x");
-        uart_print_hex(data);
-        uart_print_esc(NEW_LINE);
-    }
-    */
+    while(1);
 }
 

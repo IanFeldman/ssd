@@ -8,7 +8,7 @@ void flash_init()
     CTRL_PORT &= ~CHIP_ENABLE;
 
     /* configure data port as input */
-    DATA_PORT = 0xFF;
+    /* DATA_PORT = 0xFF; */
 }
 
 
@@ -19,10 +19,10 @@ void flash_set_address(address_t *address)
     P1 = address->low;
     P2 = address->middle;
 
-    /* clear port 3 bytes */
+    /* clear port 3 bytes and set address */
+    P3 &= ~(7 << 2);   /* clear 3.2, 3.3, 3.4 */
     char high_bits = address->high;
-    P3 &= ~(7 << 2);
-    high_bits &= 0x03; /* isolate first three bits */
+    high_bits &= 0x07; /* isolate first three bits */
     high_bits <<= 2;   /* shift bits over to match port */
     P3 |= high_bits;
 }
@@ -41,7 +41,6 @@ void flash_sdp(address_t *addresses, char *data, char count)
         CTRL_PORT &= ~WRITE_ENABLE;    /* latch address */
         DATA_PORT = data[i];
         CTRL_PORT |= WRITE_ENABLE;    /* latch data */
-        flash_delay(TIME_QUICK);      /* small delay */
     }
 }
 
@@ -49,10 +48,6 @@ void flash_sdp(address_t *addresses, char *data, char count)
 /* Write to flash */
 void flash_program(char data, address_t *address)
 {
-    /* enable chip */
-    CTRL_PORT &= ~CHIP_ENABLE;
-    flash_delay(TIME_QUICK);
-
     static const char sdp_data[3] = { 0xAA, 0x55, 0xA0 };
     static const address_t sdp_addresses[3] = {
         { 0x00, 0x55, 0x55 },
@@ -81,8 +76,7 @@ char flash_read(address_t *address)
     flash_set_address(address);
 
     /* read */
-    CTRL_PORT &= ~(CHIP_ENABLE | OUTPUT_ENABLE);
-    flash_delay(TIME_QUICK);
+    CTRL_PORT &= ~OUTPUT_ENABLE;
     char data = DATA_PORT;
 
     /* restore and return */
@@ -94,10 +88,6 @@ char flash_read(address_t *address)
 /* Clear bytes */
 void flash_erase(address_t *address)
 {
-    /* enable chip */
-    CTRL_PORT &= ~CHIP_ENABLE;
-    flash_delay(TIME_QUICK);
-
     static const char sdp_data[6] = {
         0xAA, 0x55, 0x80, 0xAA, 0x55, 0x30
     };
