@@ -101,12 +101,15 @@ void flash_erase(address_t *address)
     };
     flash_sdp(sdp_addresses, sdp_data, 6);
 
+    /* can take up to 25ms, so do extra delay */
+    flash_delay(TIME_QUICK);
+
     /* restore */
     flash_init();
 }
 
 
-/* Delay some time: count = 0xFF is about 0.5 seconds */
+/* Delay some time: 1 count = 2 ms */
 void flash_delay(char count)
 {
     for (char i = 0; i < 0xFF; i++)
@@ -123,7 +126,7 @@ char flash_get_id()
     static const char sdp_data[3] = {
         0xAA, 0x55, 0x90
     };
-    const address_t sdp_addresses[3] = {
+    static const address_t sdp_addresses[3] = {
         { 0x00, 0x55, 0x55 },
         { 0x00, 0x2A, 0xAA },
         { 0x00, 0x55, 0x55 }
