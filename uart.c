@@ -2,7 +2,7 @@
 #include <8051.h>
 #include "uart.h"
 
-volatile char input_ready, input_index;
+volatile char input_ready;
 volatile char input[INPUT_MAX];
 
 /* Initialize uart peripheral, using timer 1 to generate baud. */
@@ -18,7 +18,6 @@ void uart_init()
     SCON  = 0x50;   /* mode 1 (8 bit tx/rx) + enable receive */
 
     input_ready = 0;
-    input_index = 0;
 
     /* interrupts */
     EA = 1;
@@ -73,6 +72,8 @@ void uart_print_hex(char val)
 /* Interrupt that receives serial data */
 void uart_isr() __interrupt (4)
 {
+    static char input_index = 0;
+
     if (RI && !input_ready)
     {
         /* clear interrupt flag */
@@ -112,12 +113,5 @@ void uart_reset_input_ready()
 char *uart_get_input()
 {
     return input;
-}
-
-
-/* Get length used of input buffer */
-char uart_get_input_length()
-{
-    return input_index;
 }
 

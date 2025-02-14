@@ -19,7 +19,6 @@ void uart_isr() __interrupt (4);
 char uart_get_input_ready();
 void uart_reset_input_ready();
 char *uart_get_input();
-char uart_get_input_length();
 
 #endif /* UART_H */
 
