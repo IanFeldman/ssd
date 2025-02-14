@@ -2,6 +2,9 @@
 #include <8051.h>
 #include "uart.h"
 
+volatile char input_ready, input_index;
+volatile char input[INPUT_MAX];
+
 /* Initialize uart peripheral, using timer 1 to generate baud. */
 void uart_init()
 {
@@ -13,6 +16,9 @@ void uart_init()
 
     /* uart */
     SCON  = 0x50;   /* mode 1 (8 bit tx/rx) + enable receive */
+
+    input_ready = 0;
+    input_index = 0;
 
     /* interrupts */
     EA = 1;
@@ -64,14 +70,54 @@ void uart_print_hex(char val)
     uart_print_char("0123456789ABCDEF"[val & 0x0F]);
 }
 
-
 /* Interrupt that receives serial data */
 void uart_isr() __interrupt (4)
 {
-    if (RI)
+    if (RI && !input_ready)
     {
+        /* clear interrupt flag */
         RI = 0;
-        uart_print_char(SBUF);
+
+        /* parse input on enter */
+        char c = SBUF;
+        if (c == RETURN_KEY || input_index >= INPUT_MAX)
+        {
+            input_ready = 1;
+            input_index = 0;
+            return;
+        }
+
+        /* print input and add it to buffer */
+        uart_print_char(c);
+        input[input_index++] = c;
     }
+}
+
+
+/* Get input_ready flag */
+char uart_get_input_ready()
+{
+    return input_ready;
+}
+
+
+/* Clear input ready flag */
+void uart_reset_input_ready()
+{
+    input_ready = 0x00;
+}
+
+
+/* Get input buffer */
+char *uart_get_input()
+{
+    return input;
+}
+
+
+/* Get length used of input buffer */
+char uart_get_input_length()
+{
+    return input_index;
 }
 
