@@ -1,4 +1,3 @@
-#include <string.h>
 #include <8051.h>
 #include "uart.h"
 
@@ -29,7 +28,7 @@ void uart_init()
 void uart_print(char *string)
 {
     /* check if string is null */
-    if (string == NULL)
+    if (!string)
     {
         return;
     }
@@ -44,7 +43,7 @@ void uart_print(char *string)
 /* Print an ANSI escape code over serial. */
 void uart_print_esc(char *code)
 {
-    if (code == NULL)
+    if (!code)
     {
         return;
     }
