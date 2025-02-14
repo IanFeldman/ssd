@@ -10,15 +10,10 @@ void main()
     /* reset screen */
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
-    uart_print("Starting");
-    uart_print_esc(NEW_LINE);
-    flash_delay(0xFF);
 
-    address_t addr = { 0x00, 0x00, 0xAB };
+    address_t addr = { 0x00, 0x00, 0x12 };
     flash_erase(&addr);
-    flash_program(0xBF, &addr);
-
-    flash_delay(0xFF);
+    flash_program(0x77, &addr);
 
     char data = flash_read(&addr);
     uart_print("read: 0x");

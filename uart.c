@@ -24,15 +24,14 @@ void uart_init()
 void uart_print(char *string)
 {
     /* check if string is null */
-    const char *str = string;
     if (string == NULL)
     {
-        str = "Error print string is null";
+        return;
     }
 
-    for (int i = 0; i < strlen(str); i++)
+    while (*string)
     {
-        uart_print_char(str[i]);
+        uart_print_char(*string++);
     }
 }
 
@@ -42,7 +41,6 @@ void uart_print_esc(char *code)
 {
     if (code == NULL)
     {
-        uart_print("Error escape code is null");
         return;
     }
     uart_print_char(ESC_CHAR);
@@ -62,9 +60,8 @@ void uart_print_char(char ch)
 /* Print value as hex */
 void uart_print_hex(char val)
 {
-    static char hex_chars[] = "0123456789ABCDEF";
-    uart_print_char(hex_chars[val >> 4]);
-    uart_print_char(hex_chars[val & 0x0F]);
+    uart_print_char("0123456789ABCDEF"[val >> 4]);
+    uart_print_char("0123456789ABCDEF"[val & 0x0F]);
 }
 
 
