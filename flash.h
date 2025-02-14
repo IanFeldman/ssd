@@ -22,7 +22,6 @@ void flash_program(char data, address_t *address);
 char flash_read(address_t *address);
 void flash_erase(address_t *address);
 void flash_delay(char count);
-char flash_get_id();
 
 #endif /* FLASH_H */
 

@@ -1,6 +1,23 @@
 #include <8051.h>
 #include "flash.h"
 
+/* Static constant data for SDP - hopefully stored in nonvolatile mem */
+static const char sdp_data_program[3] = { 0xAA, 0x55, 0xA0 };
+static const address_t sdp_addresses_program[3] = {
+    { 0x00, 0x55, 0x55 },
+    { 0x00, 0x2A, 0xAA },
+    { 0x00, 0x55, 0x55 }
+};
+
+static const char sdp_data_erase[5] = { 0xAA, 0x55, 0x80, 0xAA, 0x55 };
+static const address_t sdp_addresses_erase[5] = {
+    { 0x00, 0x55, 0x55 },
+    { 0x00, 0x2A, 0xAA },
+    { 0x00, 0x55, 0x55 },
+    { 0x00, 0x55, 0x55 },
+    { 0x00, 0x2A, 0xAA }
+};
+
 /* Initialize the chip to be disabled. */
 void flash_init()
 {
@@ -50,15 +67,10 @@ void flash_sdp(address_t *addresses, char *data, char count)
 /* Write to flash */
 void flash_program(char data, address_t *address)
 {
-    const char sdp_data[4] = { 0xAA, 0x55, 0xA0, data };
-    const address_t sdp_addresses[4] = {
-        { 0x00, 0x55, 0x55 },
-        { 0x00, 0x2A, 0xAA },
-        { 0x00, 0x55, 0x55 },
-        { address->high, address->middle, address->low }
-    };
-    flash_sdp(sdp_addresses, sdp_data, 4);
-
+    /* setup */
+    flash_sdp(sdp_addresses_program, sdp_data_program, 3);
+    /* data */
+    flash_sdp(address, &data, 1);
     /* restore */
     flash_init();
 }
@@ -88,18 +100,9 @@ void flash_erase(address_t *address)
     address_sector.middle = address->middle & 0xF0;
     address_sector.high = address->high;
 
-    static const char sdp_data[6] = {
-        0xAA, 0x55, 0x80, 0xAA, 0x55, 0x30
-    };
-    const address_t sdp_addresses[6] = {
-        { 0x00, 0x55, 0x55 },
-        { 0x00, 0x2A, 0xAA },
-        { 0x00, 0x55, 0x55 },
-        { 0x00, 0x55, 0x55 },
-        { 0x00, 0x2A, 0xAA },
-        { address->high, address->middle, address->low }
-    };
-    flash_sdp(sdp_addresses, sdp_data, 6);
+    flash_sdp(sdp_addresses_erase, sdp_data_erase, 5);
+    char sector_erase = 0x30;
+    flash_sdp(address, &sector_erase, 1);
 
     /* can take up to 25ms, so do extra delay */
     flash_delay(TIME_QUICK);
@@ -116,30 +119,5 @@ void flash_delay(char count)
     {
         for (char j = 0; j < count; j++);
     }
-}
-
-
-/* Get id of flash chip */
-char flash_get_id()
-{
-    /* software id entry */
-    static const char sdp_data[3] = {
-        0xAA, 0x55, 0x90
-    };
-    static const address_t sdp_addresses[3] = {
-        { 0x00, 0x55, 0x55 },
-        { 0x00, 0x2A, 0xAA },
-        { 0x00, 0x55, 0x55 }
-    };
-    flash_sdp(sdp_addresses, sdp_data, 3);
-
-    char id;
-    address_t id_addr = { 0x00, 0x00, 0x01 };
-    id = flash_read(&id_addr);
-
-    /* restore */
-    flash_init();
-
-    return id;
 }
 
