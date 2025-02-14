@@ -6,9 +6,6 @@ void flash_init()
 {
     CTRL_PORT |= OUTPUT_ENABLE | WRITE_ENABLE;
     CTRL_PORT &= ~CHIP_ENABLE;
-
-    /* configure data port as input */
-    /* DATA_PORT = 0xFF; */
 }
 
 
@@ -25,6 +22,8 @@ void flash_set_address(address_t *address)
     high_bits &= 0x07; /* isolate first three bits */
     high_bits <<= 2;   /* shift bits over to match port */
     P3 |= high_bits;
+
+    flash_delay(TIME_QUICK);
 }
 
 
@@ -39,8 +38,11 @@ void flash_sdp(address_t *addresses, char *data, char count)
     {
         flash_set_address(&addresses[i]);
         CTRL_PORT &= ~WRITE_ENABLE;    /* latch address */
+        flash_delay(TIME_QUICK);
         DATA_PORT = data[i];
+        flash_delay(TIME_QUICK);
         CTRL_PORT |= WRITE_ENABLE;    /* latch data */
+        flash_delay(TIME_QUICK);
     }
 }
 
@@ -48,22 +50,14 @@ void flash_sdp(address_t *addresses, char *data, char count)
 /* Write to flash */
 void flash_program(char data, address_t *address)
 {
-    static const char sdp_data[3] = { 0xAA, 0x55, 0xA0 };
-    static const address_t sdp_addresses[3] = {
+    const char sdp_data[4] = { 0xAA, 0x55, 0xA0, data };
+    const address_t sdp_addresses[4] = {
         { 0x00, 0x55, 0x55 },
         { 0x00, 0x2A, 0xAA },
-        { 0x00, 0x55, 0x55 }
+        { 0x00, 0x55, 0x55 },
+        { address->high, address->middle, address->low }
     };
-    flash_sdp(sdp_addresses, sdp_data, 3);
-
-    /* begin programming */
-    flash_set_address(address);
-    CTRL_PORT &= ~WRITE_ENABLE;
-    DATA_PORT = data;
-    CTRL_PORT |= WRITE_ENABLE;
-
-    /* wait at least 20us */
-    flash_delay(TIME_QUICK);
+    flash_sdp(sdp_addresses, sdp_data, 4);
 
     /* restore */
     flash_init();
@@ -85,9 +79,15 @@ char flash_read(address_t *address)
 }
 
 
-/* Clear bytes */
+/* Erase bytes in a sector. Constrain address to multiple of 4kb */
 void flash_erase(address_t *address)
 {
+    /* make address a multiple of 4k */
+    address_t address_sector;
+    address_sector.low = 0x00;
+    address_sector.middle = address->middle & 0xF0;
+    address_sector.high = address->high;
+
     static const char sdp_data[6] = {
         0xAA, 0x55, 0x80, 0xAA, 0x55, 0x30
     };
@@ -106,7 +106,7 @@ void flash_erase(address_t *address)
 }
 
 
-/* Delay about half a second */
+/* Delay some time: count = 0xFF is about 0.5 seconds */
 void flash_delay(char count)
 {
     for (char i = 0; i < 0xFF; i++)
@@ -116,6 +116,7 @@ void flash_delay(char count)
 }
 
 
+/* Get id of flash chip */
 char flash_get_id()
 {
     /* software id entry */

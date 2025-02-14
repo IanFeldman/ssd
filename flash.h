@@ -7,7 +7,7 @@
 #define CHIP_ENABLE 0x40
 #define OUTPUT_ENABLE 0x80
 
-#define TIME_QUICK 0xFF
+#define TIME_QUICK 0x0F
 
 typedef struct {
     char high;
