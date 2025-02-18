@@ -135,7 +135,7 @@ char uart_hex_to_char(char *val)
         }
         else if (c >= 'A' && c <= 'F')
         {
-            result += (c - 'A') * place;
+            result += (c - 'A' + 10) * place;
         }
         else
         {

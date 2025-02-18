@@ -8,7 +8,7 @@
 #define HOME_CURSOR "[H"
 #define CLEAR_SCREEN "[2J"
 
-#define INPUT_MAX 8
+#define INPUT_MAX 9
 #define RETURN_KEY 0x0D
 
 void uart_init();

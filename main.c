@@ -16,11 +16,17 @@ void parse_input(char *input)
             value = flash_read(&addr);
             uart_print("Read: 0x");
             uart_print_hex(value);
-            uart_print_esc(NEW_LINE);
-            uart_print(PROMPT);
             break;
         case 'p':
-            uart_print("p");
+            uart_hex_to_addr(input + 1, &addr);
+            value = uart_hex_to_char(input + 7);
+            flash_program(value, &addr);
+            uart_print("Wrote byte 0x");
+            uart_print_hex(value);
+            uart_print(" to address 0x");
+            uart_print_hex(addr.high);
+            uart_print_hex(addr.middle);
+            uart_print_hex(addr.low);
             break;
         case 'e':
             uart_print("e");
@@ -28,10 +34,10 @@ void parse_input(char *input)
         default:
             uart_print("?");
             uart_reset_input_ready();
-            uart_print_esc(NEW_LINE);
-            uart_print(PROMPT);
             return;
     }
+    uart_print_esc(NEW_LINE);
+    uart_print(PROMPT);
     uart_reset_input_ready();
 }
 
