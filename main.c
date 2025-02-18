@@ -36,8 +36,6 @@ void parse_input(char *input)
             break;
         default:
             uart_print("?");
-            uart_reset_input_ready();
-            return;
     }
     uart_print_esc(NEW_LINE);
     uart_print(PROMPT);
