@@ -72,7 +72,7 @@ void uart_print_hex(char val)
 /* Print address as hex */
 void uart_print_addr(address_t *addr)
 {
-    uart_print_hex(addr->high);
+    uart_print_hex(addr->high & 0x07);
     uart_print_hex(addr->middle);
     uart_print_hex(addr->low);
 }
