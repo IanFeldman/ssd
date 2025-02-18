@@ -3,10 +3,10 @@
 CC = sdcc
 CFLAGS = -mmcs51
 
-all: nand.hex
+all: nor.hex
 
-nand.hex: main.c uart.rel flash.rel
-	$(CC) -o nand.hex main.c uart.rel flash.rel
+nor.hex: main.c uart.rel flash.rel
+	$(CC) -o nor.hex main.c uart.rel flash.rel
 
 uart.rel: uart.c uart.h
 	$(CC) $(CFLAGS) -c -o uart.rel uart.c
