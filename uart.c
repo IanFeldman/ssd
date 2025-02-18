@@ -105,6 +105,11 @@ char uart_get_input_ready()
 void uart_reset_input_ready()
 {
     input_ready = 0x00;
+    /* clear input bufffer */
+    for (char i = 0; i < INPUT_MAX; i++)
+    {
+        input[i] = 0;
+    }
 }
 
 
@@ -112,5 +117,42 @@ void uart_reset_input_ready()
 char *uart_get_input()
 {
     return input;
+}
+
+
+/* Convert 2 byte hex string to char */
+char uart_hex_to_char(char *val)
+{
+    char result = 0;
+    char place = 16;
+
+    for (char i = 0; i < 2; i++)
+    {
+        char c = val[i];
+        if (c >= '0' && c <= '9')
+        {
+            result += (c - '0') * place;
+        }
+        else if (c >= 'A' && c <= 'F')
+        {
+            result += (c - 'A') * place;
+        }
+        else
+        {
+            return 0;
+        }
+        place = 1;
+    }
+
+    return result;
+}
+
+
+/* Convert 6 byte hex string to address */
+void uart_hex_to_addr(char *val, address_t *addr)
+{
+    addr->high = uart_hex_to_char(val);
+    addr->middle = uart_hex_to_char(val + 2);
+    addr->low = uart_hex_to_char(val + 4);
 }
 

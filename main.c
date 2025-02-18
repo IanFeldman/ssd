@@ -1,13 +1,23 @@
 #include "flash.h"
 #include "uart.h"
 
+#define PROMPT "> "
+
 void parse_input(char *input)
 {
+    char value;
+    address_t addr;
+
     uart_print_esc(NEW_LINE);
     switch (input[0])
     {
         case 'r':
-            uart_print("r");
+            uart_hex_to_addr(input + 1, &addr);
+            value = flash_read(&addr);
+            uart_print("Read: 0x");
+            uart_print_hex(value);
+            uart_print_esc(NEW_LINE);
+            uart_print(PROMPT);
             break;
         case 'p':
             uart_print("p");
@@ -19,7 +29,7 @@ void parse_input(char *input)
             uart_print("?");
             uart_reset_input_ready();
             uart_print_esc(NEW_LINE);
-            uart_print("> ");
+            uart_print(PROMPT);
             return;
     }
     uart_reset_input_ready();
@@ -35,7 +45,7 @@ void main()
     /* reset screen */
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
-    uart_print("> ");
+    uart_print(PROMPT);
 
     while(1)
     {
