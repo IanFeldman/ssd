@@ -68,6 +68,16 @@ void uart_print_hex(char val)
     uart_print_char("0123456789ABCDEF"[val & 0x0F]);
 }
 
+
+/* Print address as hex */
+void uart_print_addr(address_t *addr)
+{
+    uart_print_hex(addr->high);
+    uart_print_hex(addr->middle);
+    uart_print_hex(addr->low);
+}
+
+
 /* Interrupt that receives serial data */
 void uart_isr() __interrupt (4)
 {

@@ -16,6 +16,7 @@ void uart_print(char *string);
 void uart_print_esc(char *code);
 void uart_print_char(char ch);
 void uart_print_hex(char val);
+void uart_print_addr(address_t *addr);
 char uart_hex_to_char(char *val);
 void uart_hex_to_addr(char *val, address_t *addr);
 

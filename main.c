@@ -24,9 +24,7 @@ void parse_input(char *input)
             uart_print("Wrote byte 0x");
             uart_print_hex(value);
             uart_print(" to address 0x");
-            uart_print_hex(addr.high);
-            uart_print_hex(addr.middle);
-            uart_print_hex(addr.low);
+            uart_print_addr(&addr);
             break;
         case 'e':
             uart_print("e");
