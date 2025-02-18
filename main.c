@@ -14,8 +14,10 @@ void parse_input(char *input)
         case 'r':
             uart_hex_to_addr(input + 1, &addr);
             value = flash_read(&addr);
-            uart_print("Read: 0x");
+            uart_print("Read byte 0x");
             uart_print_hex(value);
+            uart_print(" from address 0x");
+            uart_print_addr(&addr);
             break;
         case 'p':
             uart_hex_to_addr(input + 1, &addr);
@@ -27,7 +29,10 @@ void parse_input(char *input)
             uart_print_addr(&addr);
             break;
         case 'e':
-            uart_print("e");
+            uart_hex_to_addr(input + 1, &addr);
+            flash_erase(&addr);
+            uart_print("Erased address 0x");
+            uart_print_addr(&addr);
             break;
         default:
             uart_print("?");
