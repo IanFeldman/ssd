@@ -31,7 +31,7 @@ void parse_input(char *input)
         case 'e':
             uart_hex_to_addr(input + 1, &addr);
             flash_erase(&addr);
-            uart_print("Erased address 0x");
+            uart_print("Erased 4k sector starting at address 0x");
             uart_print_addr(&addr);
             break;
         default:
