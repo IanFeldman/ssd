@@ -7,4 +7,5 @@
 *.lk
 *.map
 *.mem
+.DS_Store
 
