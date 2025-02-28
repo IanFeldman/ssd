@@ -1,0 +1,15 @@
+Power consumption:
+    Idle: 75mW (5V, 15mA)
+    Read: 75mW
+    Program: 90mW
+    Sector Erase: 95mW
+
+Operation Time:
+    Read: 4.82us (not including set address)
+    Program: 286ms
+    Sector Erase: 448ms
+
+Clock Speed: 20MHz
+
+Note this firmware does not poll for completion but has a fixed delay of 40ms.
+
