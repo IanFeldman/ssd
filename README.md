@@ -2,7 +2,7 @@
 2025 CPE senior project exploring nonvolatile storage.
 
 ## nor
-512kb flash memory storage device. Interface over UART 9600 baud. Program with avrdude + ISP. See hardware schematic for details.
+512kb flash memory storage device. Interface over UART at 9600 baud. Compile with SDCC and program with avrdude. See hardware schematic for details.
 
 ### Usage:
 Read an address: ```r[address]```\
