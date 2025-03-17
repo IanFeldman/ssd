@@ -9,8 +9,8 @@ all: nand.hex
 nand.hex: nand.elf
 	$(CCPY) -j .text -j .data -O ihex nand.elf nand.hex
 
-nand.elf: main.c
-	$(CC) $(CFLAGS) -o nand.elf main.c
+nand.elf: main.c uart.c
+	$(CC) $(CFLAGS) -o nand.elf main.c uart.c
 
 clean:
 	rm -f nand.elf nand.hex
