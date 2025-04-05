@@ -1,5 +1,6 @@
 #include "flash.h"
 #include <avr/io.h>
+#include <util/delay.h>
 
 /* Set data lines as inputs */
 static void set_data_input()
@@ -24,6 +25,7 @@ static void command_cycle(uint8_t command)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
+    _delay_ms(250); /* TODO: figure out how much time here */
 
     /* latch command */
     PORTB = command;
@@ -40,6 +42,7 @@ static void address_cycle(uint8_t address)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
+    _delay_ms(250);
 
     /* latch address */
     PORTB = address;
@@ -48,6 +51,18 @@ static void address_cycle(uint8_t address)
 
     /* reset */
     PORTD &= ~ADDR_LATCH;
+}
+
+
+/* Perform single data read cycle */
+static uint8_t data_cycle()
+{
+    /* maybe wait until ready? */
+    PORTD &= ~READ_ENABLE;
+    _delay_ms(250);
+    uint8_t data = PINB;
+    PORTD |= READ_ENABLE;
+    return data;
 }
 
 
@@ -75,9 +90,15 @@ void flash_init()
 }
 
 
-void flash_read_id()
+/* Read chip code and store 5 bytes in id */
+void flash_read_id(uint8_t *id)
 {
     command_cycle(0x90);
     address_cycle(0x00);
+    set_data_input();
+    for (int i = 0; i < 5; i++)
+    {
+        id[i] = data_cycle();
+    }
 }
 

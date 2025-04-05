@@ -55,7 +55,7 @@ void uart_print_char(char ch)
 
 
 /* Print value as hex */
-void uart_print_hex(char val)
+void uart_print_hex(uint8_t val)
 {
     uart_print_char("0123456789ABCDEF"[val >> 4]);
     uart_print_char("0123456789ABCDEF"[val & 0x0F]);

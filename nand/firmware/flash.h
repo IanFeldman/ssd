@@ -1,6 +1,10 @@
 #ifndef FLASH_H
 #define FLASH_H
 
+#include <stdio.h>
+
+#define F_CPU 16000000UL
+
 #define CHIP_ENABLE (1 << PC2)
 #define ADDR_LATCH (1 << PD0)
 #define CMD_LATCH (1 << PD1)
@@ -10,6 +14,7 @@
 #define READY_BUSY (1 << PD7)
 
 void flash_init();
+void flash_read_id(uint8_t *id);
 
 #endif /* FLASH_H */
 
