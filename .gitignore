@@ -8,5 +8,6 @@
 *.map
 *.mem
 *.elf
+*.swp
 .DS_Store
 
