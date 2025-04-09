@@ -54,15 +54,18 @@ static void address_cycle(uint8_t address)
 }
 
 
-/* Perform single data read cycle */
-static uint8_t data_cycle()
+/* Get 'size' bytes of data from flash chip */
+static void get_data(uint8_t *data, int size)
 {
-    /* maybe wait until ready? */
-    PORTD &= ~READ_ENABLE;
-    _delay_ms(250);
-    uint8_t data = PINB;
-    PORTD |= READ_ENABLE;
-    return data;
+    set_data_input();
+    for (int i = 0; i < size; i++)
+    {
+        /* maybe wait until ready? */
+        PORTD &= ~READ_ENABLE;
+        _delay_ms(250);
+        data[i] = PINB;
+        PORTD |= READ_ENABLE;
+    }
 }
 
 
@@ -90,15 +93,21 @@ void flash_init()
 }
 
 
-/* Read chip code and store 5 bytes in id */
+/* Read chip code and return 5 bytes in id */
 void flash_read_id(uint8_t *id)
 {
     command_cycle(0x90);
     address_cycle(0x00);
-    set_data_input();
-    for (int i = 0; i < 5; i++)
-    {
-        id[i] = data_cycle();
-    }
+    get_data(id, 5);
+}
+
+
+/* Read a single page from flash */
+void flash_read_page(uint8_t *data)
+{
+    /* read mode */
+    command_cycle(0x00);
+    address_cycle(0x00);
+    command_cycle(0x30);
 }
 
