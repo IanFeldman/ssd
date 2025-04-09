@@ -26,6 +26,18 @@ int main()
     }
     uart_print_esc(NEW_LINE);
 
+    /* read page */
+    int size = 8;
+    uint8_t data[size];
+    flash_read_page(data);
+    uart_print("Data: ");
+    for (int i = 0; i < size; i++)
+    {
+        uart_print_hex(data[i]);
+        uart_print(" ");
+    }
+    uart_print_esc(NEW_LINE);
+
     return 0;
 }
 

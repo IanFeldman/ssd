@@ -15,6 +15,7 @@
 
 void flash_init();
 void flash_read_id(uint8_t *id);
+void flash_read_page(uint8_t *data);
 
 #endif /* FLASH_H */
 

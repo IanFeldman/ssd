@@ -25,7 +25,7 @@ static void command_cycle(uint8_t command)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
-    _delay_ms(250); /* TODO: figure out how much time here */
+    _delay_us(0.01); /* delay < tWP */
 
     /* latch command */
     PORTB = command;
@@ -42,7 +42,7 @@ static void address_cycle(uint8_t address)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
-    _delay_ms(250);
+    _delay_us(0.01); /* delay < tWP */
 
     /* latch address */
     PORTB = address;
@@ -62,10 +62,17 @@ static void get_data(uint8_t *data, int size)
     {
         /* maybe wait until ready? */
         PORTD &= ~READ_ENABLE;
-        _delay_ms(250);
+        _delay_us(0.01);
         data[i] = PINB;
         PORTD |= READ_ENABLE;
     }
+}
+
+
+/* Wait for r/b# to be high */
+static void wait_ready()
+{
+    while (!(PIND & READY_BUSY));
 }
 
 
@@ -84,18 +91,17 @@ void flash_init()
     /* set chip enable high */
     PORTC &= ~CHIP_ENABLE;
 
-    /* wait for r/b# to be high */
-    while (!(PIND & READY_BUSY));
+    wait_ready();
     /* issue reset command */
     command_cycle(0xFF);
-    /* wait for complete */
-    while (!(PIND & READY_BUSY));
+    wait_ready();
 }
 
 
 /* Read chip code and return 5 bytes in id */
 void flash_read_id(uint8_t *id)
 {
+    set_data_output();
     command_cycle(0x90);
     address_cycle(0x00);
     get_data(id, 5);
@@ -105,9 +111,23 @@ void flash_read_id(uint8_t *id)
 /* Read a single page from flash */
 void flash_read_page(uint8_t *data)
 {
-    /* read mode */
+    set_data_output();
+
+    /* read page into cache */
     command_cycle(0x00);
     address_cycle(0x00);
     command_cycle(0x30);
+    wait_ready();
+
+    /* read from cache */
+    for (int i = 0; i < 8; i++)
+    {
+        command_cycle(0x05);
+        address_cycle(0x00);
+        address_cycle(0x00);
+        command_cycle(0xE0);
+        _delay_us(1);
+        get_data(data + i, 1);
+    }
 }
 
