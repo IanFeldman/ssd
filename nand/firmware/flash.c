@@ -124,7 +124,7 @@ void flash_read_page(uint8_t *data)
     {
         command_cycle(0x05);
         address_cycle(0x00);
-        address_cycle(0x00);
+        address_cycle(i);
         command_cycle(0xE0);
         _delay_us(1);
         get_data(data + i, 1);
