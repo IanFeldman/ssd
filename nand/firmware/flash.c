@@ -20,7 +20,7 @@ static void set_data_output()
 }
 
 
-/* Perform single command cycle */
+/* Perform single command output cycle */
 static void command_cycle(uint8_t command)
 {
     /* set write enable low */
@@ -37,7 +37,7 @@ static void command_cycle(uint8_t command)
 }
 
 
-/* Perform single address cycle */
+/* Perform single address output cycle */
 static void address_cycle(uint8_t address)
 {
     /* set write enable low */
@@ -51,6 +51,28 @@ static void address_cycle(uint8_t address)
 
     /* reset */
     PORTD &= ~ADDR_LATCH;
+}
+
+
+/* Perform output cycle for a 2-byte column */
+static void latch_column(uint16_t column)
+{
+    uint8_t c1 = column & 0xFF;
+    uint8_t c2 = (column >> 8) & 0xFF;
+    address_cycle(c1);
+    address_cycle(c2);
+}
+
+
+/* Perform output cycle for a 3-byte address */
+static void latch_address(uint32_t address)
+{
+    uint8_t r1 = address & 0xFF;
+    uint8_t r2 = (address >> 8) & 0xFF;
+    uint8_t r3 = (address >> 16) & 0xFF;
+    address_cycle(r1);
+    address_cycle(r2);
+    address_cycle(r3);
 }
 
 
@@ -102,7 +124,7 @@ void flash_init()
 void flash_read_id(uint8_t *id)
 {
     set_data_output();
-    command_cycle(0x90);
+    command_cycle(READ_ID_CMD);
     address_cycle(0x00);
     get_data(id, 5);
 }
@@ -114,18 +136,19 @@ void flash_read_page(uint8_t *data)
     set_data_output();
 
     /* read page into cache */
-    command_cycle(0x00);
-    address_cycle(0x00);
-    command_cycle(0x30);
+    command_cycle(READ_PAGE_CMD);
+    latch_column(0);
+    latch_address(0);
+    command_cycle(END_READ_PAGE_CMD);
     wait_ready();
 
     /* read from cache */
-    for (int i = 0; i < 8; i++)
+    for (uint16_t i = 0; i < 8; i++)
     {
-        command_cycle(0x05);
-        address_cycle(0x00);
-        address_cycle(i);
-        command_cycle(0xE0);
+        /* send random data read */
+        command_cycle(RANDOM_READ_CMD);
+        latch_column(i);
+        command_cycle(END_RANDOM_READ_CMD);
         _delay_us(1);
         get_data(data + i, 1);
     }
