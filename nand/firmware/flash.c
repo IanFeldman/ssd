@@ -129,7 +129,7 @@ void flash_read_id(uint8_t *id)
 }
 
 
-/* Read a single page from flash */
+/* Read a single byte from flash */
 uint8_t flash_read(uint32_t address, uint16_t column)
 {
     set_data_output();
@@ -141,6 +141,7 @@ uint8_t flash_read(uint32_t address, uint16_t column)
     command_cycle(END_READ_PAGE_CMD);
     wait_ready();
 
+    /* read from cache */
     uint8_t data;
     command_cycle(RANDOM_READ_CMD);
     latch_column(0x0000);
