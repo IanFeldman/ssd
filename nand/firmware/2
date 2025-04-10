@@ -28,8 +28,7 @@ int main()
 
     /* read page */
     uint8_t data = flash_read(0, 0);
-    uart_print("Read data: ");
-    uart_print_hex(data);
+    uart_print_hex();
     uart_print_esc(NEW_LINE);
 
     return 0;

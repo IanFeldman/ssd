@@ -23,7 +23,7 @@
 
 void flash_init();
 void flash_read_id(uint8_t *id);
-void flash_read_page(uint8_t *data);
+uint8_t flash_read(uint32_t address, uint16_t column);
 
 #endif /* FLASH_H */
 

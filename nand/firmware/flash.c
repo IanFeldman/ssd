@@ -82,7 +82,6 @@ static void get_data(uint8_t *data, int size)
     set_data_input();
     for (int i = 0; i < size; i++)
     {
-        /* maybe wait until ready? */
         PORTD &= ~READ_ENABLE;
         _delay_us(0.01);
         data[i] = PINB;
@@ -131,26 +130,23 @@ void flash_read_id(uint8_t *id)
 
 
 /* Read a single page from flash */
-void flash_read_page(uint8_t *data)
+uint8_t flash_read(uint32_t address, uint16_t column)
 {
     set_data_output();
 
     /* read page into cache */
     command_cycle(READ_PAGE_CMD);
-    latch_column(0);
-    latch_address(0);
+    latch_column(column);
+    latch_address(address);
     command_cycle(END_READ_PAGE_CMD);
     wait_ready();
 
-    /* read from cache */
-    for (uint16_t i = 0; i < 8; i++)
-    {
-        /* send random data read */
-        command_cycle(RANDOM_READ_CMD);
-        latch_column(i);
-        command_cycle(END_RANDOM_READ_CMD);
-        _delay_us(1);
-        get_data(data + i, 1);
-    }
+    uint8_t data;
+    command_cycle(RANDOM_READ_CMD);
+    latch_column(0x0000);
+    command_cycle(END_RANDOM_READ_CMD);
+    wait_ready();
+    get_data(&data, 1);
+    return data;
 }
 
