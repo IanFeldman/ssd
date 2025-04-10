@@ -141,7 +141,9 @@ uint8_t flash_read(uint32_t address, uint16_t column)
     command_cycle(END_READ_PAGE_CMD);
     wait_ready();
 
-    /* read from cache */
+    /* random read or start reading bytes */
+
+    /* random read */
     uint8_t data;
     command_cycle(RANDOM_READ_CMD);
     latch_column(0x0000);
@@ -149,5 +151,23 @@ uint8_t flash_read(uint32_t address, uint16_t column)
     wait_ready();
     get_data(&data, 1);
     return data;
+}
+
+
+void flash_program(uint32_t address, uint16_t column,
+    uint8_t data)
+{
+    set_data_output();
+
+    /* load page into cache for programming */
+    command_cycle(PROGRAM_PAGE_CMD);
+    latch_column(column);
+    latch_address(address);
+    _delay_us(0.1); /* delay > tADL */
+
+    /* random program, or start inputting bytes */
+
+    command_cycle(END_PROGRAM_PAGE_CMD);
+    wait_ready();
 }
 
