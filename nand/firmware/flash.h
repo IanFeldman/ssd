@@ -27,7 +27,7 @@ void flash_init();
 void flash_read_id(uint8_t *id);
 uint8_t flash_read(uint32_t address, uint16_t column);
 void flash_program(uint32_t address, uint16_t column,
-    uint8_t data);
+    uint8_t *data, int size);
 
 #endif /* FLASH_H */
 

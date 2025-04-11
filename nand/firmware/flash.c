@@ -79,13 +79,25 @@ static void latch_address(uint32_t address)
 /* Get 'size' bytes of data from flash chip */
 static void get_data(uint8_t *data, int size)
 {
-    set_data_input();
     for (int i = 0; i < size; i++)
     {
         PORTD &= ~READ_ENABLE;
         _delay_us(0.01);
         data[i] = PINB;
         PORTD |= READ_ENABLE;
+    }
+}
+
+
+/* Set output data pins */
+static void set_data(uint8_t *data, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        PORTD &= ~WRITE_ENABLE;
+        _delay_us(0.01);
+        PINB = data[i];
+        PORTD |= WRITE_ENABLE;
     }
 }
 
@@ -143,19 +155,26 @@ uint8_t flash_read(uint32_t address, uint16_t column)
 
     /* random read or start reading bytes */
 
-    /* random read */
+    set_data_input();
+    /* read first byte */
     uint8_t data;
+    get_data(&data, 1);
+    return data;
+
+    /* random read */
+    /*
     command_cycle(RANDOM_READ_CMD);
-    latch_column(0x0000);
+    latch_column(somewhere);
     command_cycle(END_RANDOM_READ_CMD);
     wait_ready();
     get_data(&data, 1);
     return data;
+    */
 }
 
 
 void flash_program(uint32_t address, uint16_t column,
-    uint8_t data)
+    uint8_t *data, int size)
 {
     set_data_output();
 
@@ -166,7 +185,9 @@ void flash_program(uint32_t address, uint16_t column,
     _delay_us(0.1); /* delay > tADL */
 
     /* random program, or start inputting bytes */
+    set_data(data, size);
 
+    /* done */
     command_cycle(END_PROGRAM_PAGE_CMD);
     wait_ready();
 }
