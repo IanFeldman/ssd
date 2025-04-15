@@ -32,8 +32,8 @@ void uart_print(char *string)
 }
 
 
-/* Print with new line. */
-void uart_print_nl(char *string)
+/* Print string with new line appended. */
+void uart_print_ln(char *string)
 {
     uart_print(string);
     uart_print_esc(NEW_LINE);

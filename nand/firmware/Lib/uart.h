@@ -8,7 +8,7 @@
 
 void uart_init();
 void uart_print(char *string);
-void uart_print_nl(char *string);
+void uart_print_ln(char *string);
 void uart_print_esc(char *code);
 void uart_print_char(char ch);
 void uart_print_hex(uint8_t val);
