@@ -46,4 +46,6 @@ include $(DMBS_PATH)/atprogram.mk
 program: $(TARGET).hex
 	avrdude -c stk500v1 -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:$(TARGET).hex
 
-        
+fuses:
+	avrdude -c stk500v1 -p m32u2 -P /dev/ttyACM0 -b 19200 -U lfuse:w:0xFF:m -U hfuse:w:0xD7:m
+
