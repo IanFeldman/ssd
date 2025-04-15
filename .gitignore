@@ -1,13 +1,18 @@
 *.asm
-*.lst
-*.rel
-*.rst
-*.sym
+*.bin
+*.eep
+*.elf
 *.hex
 *.lk
+*.lss
+*.lst
 *.map
 *.mem
-*.elf
+*.o
+*.rel
+*.rst
 *.swp
+*.sym
 .DS_Store
+nand/firmware/obj/
 
