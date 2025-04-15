@@ -48,4 +48,4 @@ flash: $(TARGET).hex
 
 fuses:
 	avrdude -c avrisp -p m32u2 -P /dev/ttyACM0 -b 19200 -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m
-        
+
