@@ -35,6 +35,7 @@
  */
 
 #include "MassStorage.h"
+#include "Lib/uart.h"
 
 /** LUFA Mass Storage Class driver interface configuration and state information. This structure is
  *  passed to all Mass Storage Class driver functions, so that multiple instances of the same class
@@ -69,7 +70,6 @@ int main(void)
 {
 	SetupHardware();
 
-	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
 	GlobalInterruptEnable();
 
 	for (;;)
@@ -102,14 +102,18 @@ void SetupHardware(void)
 #endif
 
 	/* Hardware Initialization */
-	LEDs_Init();
+	uart_init();
 	Dataflash_Init();
 	USB_Init();
+
+        /* Clear uart terminal */
+	uart_print_esc(CLEAR_SCREEN);
+	uart_print_esc(HOME_CURSOR);
 
 	/* Check if the Dataflash is working, abort if not */
 	if (!(DataflashManager_CheckDataflashOperation()))
 	{
-		LEDs_SetAllLEDs(LEDMASK_USB_ERROR);
+		uart_print_ln("Dataflash operation failure");
 		for(;;);
 	}
 
@@ -120,13 +124,13 @@ void SetupHardware(void)
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
-	LEDs_SetAllLEDs(LEDMASK_USB_ENUMERATING);
+	uart_print_ln("USB connection event");
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
-	LEDs_SetAllLEDs(LEDMASK_USB_NOTREADY);
+	uart_print_ln("USB disconnection event");
 }
 
 /** Event handler for the library USB Configuration Changed event. */
@@ -136,7 +140,7 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 
 	ConfigSuccess &= MS_Device_ConfigureEndpoints(&Disk_MS_Interface);
 
-	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
+	uart_print_ln("USB connection changed event");
 }
 
 /** Event handler for the library USB Control Request reception event. */
@@ -153,9 +157,9 @@ bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSI
 {
 	bool CommandSuccess;
 
-	LEDs_SetAllLEDs(LEDMASK_USB_BUSY);
+	uart_print_ln("USB received SCSI command");
 	CommandSuccess = SCSI_DecodeSCSICommand(MSInterfaceInfo);
-	LEDs_SetAllLEDs(LEDMASK_USB_READY);
+	uart_print_ln("USB handled SCSI command");
 
 	return CommandSuccess;
 }
