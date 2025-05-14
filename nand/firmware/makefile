@@ -15,3 +15,9 @@ nand.elf: main.c uart.c flash.c
 clean:
 	rm -f nand.elf nand.hex
 
+flash: nand.hex
+	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:nand.hex -F
+
+fuses:
+	avrdude -c avrisp -p m32u2 -P /dev/ttyACM0 -b 19200 -U lfuse:w:0xDE:m -U hfuse:w:0xD9:m -F
+
