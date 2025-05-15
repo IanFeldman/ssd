@@ -105,7 +105,7 @@ static void set_data(uint8_t *data, int size)
     {
         PORTD &= ~WRITE_ENABLE;
         _delay_us(1);
-        PINB = data[i];
+        PORTB = data[i];
         PORTD |= WRITE_ENABLE;
     }
 }
@@ -144,15 +144,12 @@ void flash_init()
     uart_print_nl("Flash control pins initialized");
 
     /* reset all chips */
-    uint8_t ce = 0x00;
     for (int i = 1; i <= CHIP_COUNT; i++)
     {
-        ce = CHIP_ENABLE_TABLE_G[i];
-        PORTC &= ~ce;
-        wait_ready(i);
+        flash_enable(i);
         command_cycle(RESET_CMD);
         wait_ready(i);
-        PORTC |= ce;
+        flash_disable(i);
         uart_print("Reset NAND chip ");
         uart_print_hex(i);
         uart_print_esc(NEW_LINE);
