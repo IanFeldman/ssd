@@ -47,6 +47,8 @@
 #define END_RANDOM_READ_CMD  0xE0
 #define PROGRAM_PAGE_CMD     0x80
 #define END_PROGRAM_PAGE_CMD 0x10
+#define ERASE_BLOCK_CMD      0x60
+#define END_ERASE_BLOCK_CMD  0xD0
 
 void flash_init();
 void flash_enable(int chip);
@@ -55,6 +57,7 @@ void flash_read_id(uint8_t *id, int chip);
 uint8_t flash_read(uint32_t address, uint16_t column, int chip);
 void flash_program(uint32_t address, uint16_t column,
     uint8_t *data, int size, int chip);
+void flash_erase(uint32_t address, int chip);
 
 #endif /* FLASH_H */
 

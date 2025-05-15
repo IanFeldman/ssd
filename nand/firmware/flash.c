@@ -213,6 +213,7 @@ uint8_t flash_read(uint32_t address, uint16_t column, int chip)
 }
 
 
+/* Program data at address and column */
 void flash_program(uint32_t address, uint16_t column,
     uint8_t *data, int size, int chip)
 {
@@ -229,6 +230,17 @@ void flash_program(uint32_t address, uint16_t column,
 
     /* done */
     command_cycle(END_PROGRAM_PAGE_CMD);
+    wait_ready(chip);
+}
+
+
+/* Erase block of data at address */
+void flash_erase(uint32_t address, int chip)
+{
+    set_data_output();
+    command_cycle(ERASE_BLOCK_CMD);
+    latch_address(address);
+    command_cycle(END_ERASE_BLOCK_CMD);
     wait_ready(chip);
 }
 

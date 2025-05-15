@@ -27,21 +27,30 @@ int main()
     }
     uart_print_esc(NEW_LINE);
 
+    uint32_t address = 0x00000000;
+    uint16_t column = 0x0000;
+
     /* read byte */
-    uint8_t data = flash_read(0, 0, chip);
+    uint8_t data = flash_read(address, column, chip);
     uart_print("Read data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
 
+    /* erase byte */
+    flash_erase(address, chip);
+    uart_print_nl("Erased block");
+
     /* program byte */
+    /*
     data = 0xAB;
     flash_program(0, 0, &data, sizeof(data), chip);
     uart_print("Wrote data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
+    */
 
     /* reread byte */
-    data = flash_read(0, 0, chip);
+    data = flash_read(address, column, chip);
     uart_print("Read data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
