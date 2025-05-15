@@ -1,6 +1,10 @@
 #include "flash.h"
+#include "uart.h"
 #include <avr/io.h>
 #include <util/delay.h>
+
+static const uint8_t CHIP_ENABLE_TABLE_G[5] =
+    { 0x00, CHIP_ENABLE_1, CHIP_ENABLE_2, CHIP_ENABLE_3, CHIP_ENABLE_4 };
 
 /* Set data lines as inputs */
 static void set_data_input()
@@ -133,22 +137,38 @@ void flash_init()
     /* set flash ctrl pints to default values */
     PORTD |= READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
     PORTD &= ~(ADDR_LATCH | CMD_LATCH);
+    uart_print("Flash control pins initialized");
+    uart_print_esc(NEW_LINE);
 
     /* reset all chips */
     uint8_t ce = 0x00;
     for (int i = 1; i <= CHIP_COUNT; i++)
     {
-        if (i == 1) ce = CHIP_ENABLE_1;
-        if (i == 2) ce = CHIP_ENABLE_2;
-        if (i == 3) ce = CHIP_ENABLE_3;
-        if (i == 4) ce = CHIP_ENABLE_4;
-
+        ce = CHIP_ENABLE_TABLE_G[i];
         PORTC &= ~ce;
         wait_ready(i);
         command_cycle(RESET_CMD);
         wait_ready(i);
         PORTC |= ce;
+        uart_print("NAND chip reset");
+        uart_print_esc(NEW_LINE);
     }
+}
+
+
+/* Enable a chip */
+void flash_enable(int chip)
+{
+    uint8_t ce = CHIP_ENABLE_TABLE_G[chip];
+    PORTC &= ~ce;
+}
+
+
+/* Disable a chip */
+void flash_disable(int chip)
+{
+    uint8_t ce = CHIP_ENABLE_TABLE_G[chip];
+    PORTC |= ce;
 }
 
 

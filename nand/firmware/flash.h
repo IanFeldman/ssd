@@ -49,6 +49,8 @@
 #define END_PROGRAM_PAGE_CMD 0x10
 
 void flash_init();
+void flash_enable(int chip);
+void flash_disable(int chip);
 void flash_read_id(uint8_t *id, int chip);
 uint8_t flash_read(uint32_t address, uint16_t column, int chip);
 void flash_program(uint32_t address, uint16_t column,
