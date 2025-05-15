@@ -29,7 +29,7 @@ static void command_cycle(uint8_t command)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
-    _delay_us(0.01); /* delay < tWP */
+    _delay_us(1); /* delay < tWP */
 
     /* latch command */
     PORTB = command;
@@ -38,6 +38,7 @@ static void command_cycle(uint8_t command)
 
     /* reset */
     PORTD &= ~CMD_LATCH;
+    _delay_us(1); /* delay < tWP */
 }
 
 
@@ -46,7 +47,7 @@ static void address_cycle(uint8_t address)
 {
     /* set write enable low */
     PORTD &= ~WRITE_ENABLE;
-    _delay_us(0.01); /* delay < tWP */
+    _delay_us(1); /* delay < tWP */
 
     /* latch address */
     PORTB = address;
@@ -87,7 +88,7 @@ static void get_data(uint8_t *data, int size)
     for (int i = 0; i < size; i++)
     {
         PORTD &= ~READ_ENABLE;
-        _delay_us(0.01);
+        _delay_us(1);
         data[i] = PINB;
         PORTD |= READ_ENABLE;
     }
@@ -223,7 +224,7 @@ void flash_program(uint32_t address, uint16_t column,
     command_cycle(PROGRAM_PAGE_CMD);
     latch_column(column);
     latch_address(address);
-    _delay_us(0.1); /* delay > tADL */
+    _delay_us(1); /* delay > tADL */
 
     /* random program, or start inputting bytes */
     set_data(data, size);
