@@ -134,13 +134,21 @@ void flash_init()
     PORTD |= READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
     PORTD &= ~(ADDR_LATCH | CMD_LATCH);
 
-    /* TODO: reset each chip */
-    /* enable chip */
-    PORTC &= ~CHIP_ENABLE_1;
-    wait_ready(1);
-    /* issue reset command */
-    command_cycle(RESET_CMD);
-    wait_ready(1);
+    /* reset all chips */
+    uint8_t ce = 0x00;
+    for (int i = 1; i <= CHIP_COUNT; i++)
+    {
+        if (i == 1) ce = CHIP_ENABLE_1;
+        if (i == 2) ce = CHIP_ENABLE_2;
+        if (i == 3) ce = CHIP_ENABLE_3;
+        if (i == 4) ce = CHIP_ENABLE_4;
+
+        PORTC &= ~ce;
+        wait_ready(i);
+        command_cycle(RESET_CMD);
+        wait_ready(i);
+        PORTC |= ce;
+    }
 }
 
 

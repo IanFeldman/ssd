@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #define F_CPU 16000000UL
+#define CHIP_COUNT 4
 
 /* port c, active low, outputs */
 #define CHIP_ENABLE_1     (1 << PC2)
