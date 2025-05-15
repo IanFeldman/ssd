@@ -17,7 +17,7 @@ int main()
 
     /* read id */
     uint8_t id[5] = {0, 0, 0, 0, 0};
-    flash_read_id(id);
+    flash_read_id(id, 1);
     uart_print("Flash ID: ");
     for (int i = 0; i < 5; i++)
     {
@@ -27,20 +27,20 @@ int main()
     uart_print_esc(NEW_LINE);
 
     /* read byte */
-    uint8_t data = flash_read(0, 0);
+    uint8_t data = flash_read(0, 0, 1);
     uart_print("Read data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
 
     /* program byte */
     data = 0xAB;
-    flash_program(0, 0, &data, sizeof(data));
+    flash_program(0, 0, &data, sizeof(data), 1);
     uart_print("Wrote data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);
 
     /* reread byte */
-    data = flash_read(0, 0);
+    data = flash_read(0, 0, 1);
     uart_print("Read data: ");
     uart_print_hex(data);
     uart_print_esc(NEW_LINE);

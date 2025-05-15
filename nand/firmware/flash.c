@@ -79,6 +79,7 @@ static void latch_address(uint32_t address)
 /* Get 'size' bytes of data from flash chip */
 static void get_data(uint8_t *data, int size)
 {
+    set_data_input();
     for (int i = 0; i < size; i++)
     {
         PORTD &= ~READ_ENABLE;
@@ -103,36 +104,48 @@ static void set_data(uint8_t *data, int size)
 
 
 /* Wait for r/b# to be high */
-static void wait_ready()
+static void wait_ready(int chip)
 {
-    while (!(PIND & READY_BUSY));
+    while (chip == 1 && !(PIND & READY_BUSY_1));
+    while (chip == 2 && !(PIND & READY_BUSY_2));
+    while (chip == 3 && !(PIND & READY_BUSY_3));
+    while (chip == 4 && !(PINC & READY_BUSY_4));
 }
 
 
 /* Initialize pin connections */
 void flash_init()
 {
-    /* set pin directions */
+    /* set data pin directions */
     set_data_output();
-    /* chip enables in port C are output */
-    DDRC = (1 << DDC2);
-    /* all of port D is output except for r/b */
-    DDRD = 0xFF & ~(1 << DDC7);
-    /* set active low pins high by default */
-    PORTD = READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
+    /* set enable pins as outputs */
+    DDRC |= CHIP_ENABLE_DIR_1 | CHIP_ENABLE_DIR_2 | CHIP_ENABLE_DIR_3 | CHIP_ENABLE_DIR_4;
+    /* set enable pin default value high */
+    PORTC |= CHIP_ENABLE_1 | CHIP_ENABLE_2 | CHIP_ENABLE_3 | CHIP_ENABLE_4;
+    /* set ready pins as inputs */
+    DDRD &= ~(READY_BUSY_DIR_1 | READY_BUSY_DIR_2 | READY_BUSY_DIR_3);
+    DDRC &= ~(READY_BUSY_DIR_4);
+    /* set ready pins no pullup */
+    PORTD &= ~(READY_BUSY_1 | READY_BUSY_2 | READY_BUSY_3);
+    PORTC &= ~(READY_BUSY_4);
+    /* set flash ctrl pins as outputs */
+    DDRD |= ADDR_LATCH_DIR | CMD_LATCH_DIR | READ_ENABLE_DIR | WRITE_ENABLE_DIR | WRITE_PROT_DIR;
+    /* set flash ctrl pints to default values */
+    PORTD |= READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
+    PORTD &= ~(ADDR_LATCH | CMD_LATCH);
 
-    /* set chip enable high */
-    PORTC &= ~CHIP_ENABLE;
-
-    wait_ready();
+    /* TODO: reset each chip */
+    /* enable chip */
+    PORTC &= ~CHIP_ENABLE_1;
+    wait_ready(1);
     /* issue reset command */
-    command_cycle(0xFF);
-    wait_ready();
+    command_cycle(RESET_CMD);
+    wait_ready(1);
 }
 
 
 /* Read chip code and return 5 bytes in id */
-void flash_read_id(uint8_t *id)
+void flash_read_id(uint8_t *id, int chip)
 {
     set_data_output();
     command_cycle(READ_ID_CMD);
@@ -142,7 +155,7 @@ void flash_read_id(uint8_t *id)
 
 
 /* Read a single byte from flash */
-uint8_t flash_read(uint32_t address, uint16_t column)
+uint8_t flash_read(uint32_t address, uint16_t column, int chip)
 {
     set_data_output();
 
@@ -151,11 +164,10 @@ uint8_t flash_read(uint32_t address, uint16_t column)
     latch_column(column);
     latch_address(address);
     command_cycle(END_READ_PAGE_CMD);
-    wait_ready();
+    wait_ready(chip);
 
     /* random read or start reading bytes */
 
-    set_data_input();
     /* read first byte */
     uint8_t data;
     get_data(&data, 1);
@@ -174,7 +186,7 @@ uint8_t flash_read(uint32_t address, uint16_t column)
 
 
 void flash_program(uint32_t address, uint16_t column,
-    uint8_t *data, int size)
+    uint8_t *data, int size, int chip)
 {
     set_data_output();
 
@@ -189,6 +201,6 @@ void flash_program(uint32_t address, uint16_t column,
 
     /* done */
     command_cycle(END_PROGRAM_PAGE_CMD);
-    wait_ready();
+    wait_ready(chip);
 }
 
