@@ -12,6 +12,7 @@ static void set_data_input()
     /* port B: input without pulldowns */
     DDRB = 0x00;
     PORTB = 0x00;
+    _delay_us(1);
 }
 
 
@@ -21,6 +22,7 @@ static void set_data_output()
     /* port B: output default 0 */
     DDRB = 0xFF;
     PORTB = 0x00;
+    _delay_us(1);
 }
 
 
@@ -56,6 +58,7 @@ static void address_cycle(uint8_t address)
 
     /* reset */
     PORTD &= ~ADDR_LATCH;
+    _delay_us(1);
 }
 
 
@@ -101,7 +104,7 @@ static void set_data(uint8_t *data, int size)
     for (int i = 0; i < size; i++)
     {
         PORTD &= ~WRITE_ENABLE;
-        _delay_us(0.01);
+        _delay_us(1);
         PINB = data[i];
         PORTD |= WRITE_ENABLE;
     }
@@ -162,6 +165,7 @@ void flash_enable(int chip)
 {
     uint8_t ce = CHIP_ENABLE_TABLE_G[chip];
     PORTC &= ~ce;
+    wait_ready(chip);
 }
 
 
