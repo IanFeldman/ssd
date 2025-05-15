@@ -7,13 +7,11 @@ int main()
     uart_init();
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
-    uart_print("UART initialized");
-    uart_print_esc(NEW_LINE);
+    uart_print_nl("UART initialized");
 
     /* configure flash */
     flash_init();
-    uart_print("Flash initialized");
-    uart_print_esc(NEW_LINE);
+    uart_print_nl("Flash initialized");
 
     int chip = 1;
     flash_enable(chip);

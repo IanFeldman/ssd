@@ -32,6 +32,14 @@ void uart_print(char *string)
 }
 
 
+/* Print with new line. */
+void uart_print_nl(char *string)
+{
+    uart_print(string);
+    uart_print_esc(NEW_LINE);
+}
+
+
 /* Print an ANSI escape code over serial. */
 void uart_print_esc(char *code)
 {
