@@ -3,8 +3,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+/* Map chip index to chip enable value */
 static const uint8_t CHIP_ENABLE_TABLE_G[5] =
     { 0x00, CHIP_ENABLE_1, CHIP_ENABLE_2, CHIP_ENABLE_3, CHIP_ENABLE_4 };
+
 
 /* Set data lines as inputs */
 static void set_data_input()
@@ -63,7 +65,7 @@ static void address_cycle(uint8_t address)
 
 
 /* Perform output cycle for a 2-byte column */
-static void latch_column(uint16_t column)
+static void latch_address_column(uint16_t column)
 {
     uint8_t c1 = column & 0xFF;
     uint8_t c2 = (column >> 8) & 0xFF;
@@ -73,11 +75,11 @@ static void latch_column(uint16_t column)
 
 
 /* Perform output cycle for a 3-byte address */
-static void latch_address(uint32_t address)
+static void latch_address_row(uint32_t row)
 {
-    uint8_t r1 = address & 0xFF;
-    uint8_t r2 = (address >> 8) & 0xFF;
-    uint8_t r3 = (address >> 16) & 0xFF;
+    uint8_t r1 = row & 0xFF;
+    uint8_t r2 = (row >> 8) & 0xFF;
+    uint8_t r3 = (row >> 16) & 0xFF;
     address_cycle(r1);
     address_cycle(r2);
     address_cycle(r3);
@@ -185,14 +187,14 @@ void flash_read_id(uint8_t *id, int chip)
 
 
 /* Read a single byte from flash */
-uint8_t flash_read(uint32_t address, uint16_t column, int chip)
+uint8_t flash_read(uint32_t row, uint16_t column, int chip)
 {
     set_data_output();
 
     /* read page into cache */
     command_cycle(READ_PAGE_CMD);
-    latch_column(column);
-    latch_address(address);
+    latch_address_column(column);
+    latch_address_row(row);
     command_cycle(END_READ_PAGE_CMD);
     wait_ready(chip);
 
@@ -216,15 +218,15 @@ uint8_t flash_read(uint32_t address, uint16_t column, int chip)
 
 
 /* Program data at address and column */
-void flash_program(uint32_t address, uint16_t column,
+void flash_program(uint32_t row, uint16_t column,
     uint8_t *data, int size, int chip)
 {
     set_data_output();
 
     /* load page into cache for programming */
     command_cycle(PROGRAM_PAGE_CMD);
-    latch_column(column);
-    latch_address(address);
+    latch_address_column(column);
+    latch_address_row(row);
     _delay_us(1); /* delay > tADL */
 
     /* random program, or start inputting bytes */
@@ -237,11 +239,11 @@ void flash_program(uint32_t address, uint16_t column,
 
 
 /* Erase block of data at address */
-void flash_erase(uint32_t address, int chip)
+void flash_erase(uint32_t row, int chip)
 {
     set_data_output();
     command_cycle(ERASE_BLOCK_CMD);
-    latch_address(address);
+    latch_address_row(row);
     command_cycle(END_ERASE_BLOCK_CMD);
     wait_ready(chip);
 }

@@ -69,3 +69,19 @@ void uart_print_hex(uint8_t val)
     uart_print_char("0123456789ABCDEF"[val & 0x0F]);
 }
 
+
+/* Print address as hex */
+void uart_print_address(uint32_t row, uint16_t col)
+{
+    uart_print("row: 0x");
+    uart_print_hex(row >> 24);
+    uart_print_hex(row >> 16);
+    uart_print_hex(row >> 8);
+    uart_print_hex(row >> 0);
+
+    uart_print(", column: 0x");
+    uart_print_hex(col >> 8);
+    uart_print_hex(col >> 0);
+    uart_print_esc(NEW_LINE);
+}
+

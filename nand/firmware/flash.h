@@ -54,10 +54,10 @@ void flash_init();
 void flash_enable(int chip);
 void flash_disable(int chip);
 void flash_read_id(uint8_t *id, int chip);
-uint8_t flash_read(uint32_t address, uint16_t column, int chip);
-void flash_program(uint32_t address, uint16_t column,
+uint8_t flash_read(uint32_t row, uint16_t column, int chip);
+void flash_program(uint32_t row, uint16_t column,
     uint8_t *data, int size, int chip);
-void flash_erase(uint32_t address, int chip);
+void flash_erase(uint32_t row, int chip);
 
 #endif /* FLASH_H */
 

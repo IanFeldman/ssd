@@ -13,6 +13,7 @@ void uart_print_esc(char *code);
 void uart_print_char(char ch);
 void uart_print_hex(uint8_t val);
 char uart_hex_to_char(char *val);
+void uart_print_address(uint32_t row, uint16_t col);
 
 #endif /* UART_H */
 
