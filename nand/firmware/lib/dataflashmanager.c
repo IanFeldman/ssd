@@ -37,7 +37,7 @@
  */
 
 #define  INCLUDE_FROM_DATAFLASHMANAGER_C
-#include "DataflashManager.h"
+#include "dataflashmanager.h"
 
 /** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
  *  the pre-selected data OUT endpoint. This routine reads in OS sized blocks from the endpoint and writes

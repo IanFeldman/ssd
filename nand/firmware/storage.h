@@ -43,11 +43,11 @@
 		#include <avr/interrupt.h>
 		#include <string.h>
 
-		#include "Descriptors.h"
+		#include "descriptors.h"
 
-		#include "Lib/SCSI.h"
-		#include "Lib/DataflashManager.h"
-		#include "Config/AppConfig.h"
+		#include "lib/scsi.h"
+		#include "lib/dataflashmanager.h"
+		#include "config/appconfig.h"
 
 		#include <third_party/LUFA/Drivers/Board/LEDs.h>
 		#include <third_party/LUFA/Drivers/USB/USB.h>

@@ -34,10 +34,10 @@
  *  the demo and is responsible for the initial application hardware configuration.
  */
 
-#include "MassStorage.h"
-#include "Lib/flash.h"
-#include "Lib/test.h"
-#include "Lib/uart.h"
+#include "storage.h"
+#include "lib/flash.h"
+#include "lib/test.h"
+#include "lib/uart.h"
 
 /** LUFA Mass Storage Class driver interface configuration and state information. This structure is
  *  passed to all Mass Storage Class driver functions, so that multiple instances of the same class

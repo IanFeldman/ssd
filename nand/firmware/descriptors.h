@@ -41,7 +41,7 @@
 
 		#include <third_party/LUFA/Drivers/USB/USB.h>
 
-		#include "Config/AppConfig.h"
+		#include "config/appconfig.h"
 
 	/* Macros: */
 		/** Endpoint address of the Mass Storage device-to-host data IN endpoint. */

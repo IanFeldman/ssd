@@ -39,9 +39,9 @@
 	/* Includes: */
 		#include <avr/io.h>
 
-		#include "../MassStorage.h"
-		#include "../Descriptors.h"
-		#include "Config/AppConfig.h"
+		#include "../storage.h"
+		#include "../descriptors.h"
+		#include "config/appconfig.h"
 
 		#include <third_party/LUFA/Common/Common.h>
 		#include <third_party/LUFA/Drivers/USB/USB.h>

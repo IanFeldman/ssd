@@ -36,7 +36,7 @@
  */
 
 #define  INCLUDE_FROM_SCSI_C
-#include "SCSI.h"
+#include "scsi.h"
 
 /** Structure to hold the SCSI response data to a SCSI INQUIRY command. This gives information about the device's
  *  features and capabilities.

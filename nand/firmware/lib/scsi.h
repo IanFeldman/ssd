@@ -42,10 +42,10 @@
 
 		#include <third_party/LUFA/Drivers/USB/USB.h>
 
-		#include "../MassStorage.h"
-		#include "../Descriptors.h"
-		#include "DataflashManager.h"
-		#include "Config/AppConfig.h"
+		#include "../storage.h"
+		#include "../descriptors.h"
+		#include "dataflashmanager.h"
+		#include "config/appconfig.h"
 
 	/* Macros: */
 		/** Macro to set the current SCSI sense data to the given key, additional sense code and additional sense qualifier. This
