@@ -113,6 +113,9 @@ void SetupHardware(void)
 	uart_print_esc(CLEAR_SCREEN);
 	uart_print_esc(HOME_CURSOR);
 
+        /* test flash */
+        test_all();
+
 	/* Check if the Dataflash is working, abort if not */
 	if (!(DataflashManager_CheckDataflashOperation()))
 	{

@@ -143,7 +143,7 @@ void flash_init(void)
     /* set flash ctrl pints to default values */
     PORTD |= READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
     PORTD &= ~(ADDR_LATCH | CMD_LATCH);
-    uart_print_nl("Flash control pins initialized");
+    uart_print_ln("Flash control pins initialized");
 
     /* reset all chips */
     for (int i = 1; i <= CHIP_COUNT; i++)

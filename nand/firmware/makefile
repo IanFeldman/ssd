@@ -19,7 +19,7 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = MassStorage
 SRC          = $(TARGET).c Descriptors.c Lib/DataflashManager.c Lib/SCSI.c \
-               Lib/uart.c Lib/test.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+               Lib/flash.c Lib/test.c Lib/uart.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = third_party/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
@@ -44,7 +44,7 @@ include $(DMBS_PATH)/avrdude.mk
 include $(DMBS_PATH)/atprogram.mk
 
 flash: $(TARGET).hex
-	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:nand.hex
+	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:$(TARGET).hex
 
 fuses:
 	avrdude -c avrisp -p m32u2 -P /dev/ttyACM0 -b 19200 -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m
