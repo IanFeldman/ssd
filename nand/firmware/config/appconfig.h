@@ -43,8 +43,8 @@
 #ifndef _APP_CONFIG_H_
 #define _APP_CONFIG_H_
 
-	#define TOTAL_LUNS                1
+    #define TOTAL_LUNS                1
 
-	#define DISK_READ_ONLY            false
+    #define DISK_READ_ONLY            false
 
 #endif
