@@ -28,38 +28,36 @@
   this software.
 */
 
-/** \file
- *
- *  Header file for MassStorage.c.
+/*
+ * Edited by Ian Feldman and Grayson Parker
+ * May 2025
  */
 
 #ifndef _MASS_STORAGE_H_
 #define _MASS_STORAGE_H_
 
-    /* Includes: */
-        #include <avr/io.h>
-        #include <avr/wdt.h>
-        #include <avr/power.h>
-        #include <avr/interrupt.h>
-        #include <string.h>
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <string.h>
 
-        #include "descriptors.h"
+#include "descriptors.h"
 
-        #include "lib/scsi.h"
-        #include "lib/dataflashmanager.h"
-        #include "config/appconfig.h"
+#include "lib/scsi.h"
+#include "lib/dataflashmanager.h"
+#include "config/appconfig.h"
 
-        #include <third_party/LUFA/Drivers/USB/USB.h>
+#include <third_party/LUFA/Drivers/USB/USB.h>
 
-    /* Function Prototypes: */
-        void SetupHardware(void);
+void SetupHardware(void);
 
-        void EVENT_USB_Device_Connect(void);
-        void EVENT_USB_Device_Disconnect(void);
-        void EVENT_USB_Device_ConfigurationChanged(void);
-        void EVENT_USB_Device_ControlRequest(void);
+void EVENT_USB_Device_Connect(void);
+void EVENT_USB_Device_Disconnect(void);
+void EVENT_USB_Device_ConfigurationChanged(void);
+void EVENT_USB_Device_ControlRequest(void);
 
-        bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo);
+bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo);
 
 #endif
 

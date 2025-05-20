@@ -9,7 +9,10 @@
 #         LUFA Project Makefile.
 # --------------------------------------
 
-# Run "make help" for target help.
+#
+# Edited by Ian Feldman and Grayson Parker
+# May 2025
+#
 
 MCU          = atmega32u2
 ARCH         = AVR8
@@ -34,14 +37,7 @@ include $(DMBS_LUFA_PATH)/lufa-gcc.mk
 
 # Include common DMBS build system modules
 DMBS_PATH      ?= $(LUFA_PATH)/Build/DMBS/DMBS
-include $(DMBS_PATH)/core.mk
-include $(DMBS_PATH)/cppcheck.mk
-include $(DMBS_PATH)/doxygen.mk
-include $(DMBS_PATH)/dfu.mk
 include $(DMBS_PATH)/gcc.mk
-include $(DMBS_PATH)/hid.mk
-include $(DMBS_PATH)/avrdude.mk
-include $(DMBS_PATH)/atprogram.mk
 
 flash: $(TARGET).hex
 	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:$(TARGET).hex
