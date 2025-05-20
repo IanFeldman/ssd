@@ -1,18 +1,8 @@
 #include "flash.h"
 #include "uart.h"
 
-int main()
+void test_all(void)
 {
-    /* configure uart */
-    uart_init();
-    uart_print_esc(CLEAR_SCREEN);
-    uart_print_esc(HOME_CURSOR);
-    uart_print_nl("UART initialized");
-
-    /* configure flash */
-    flash_init();
-    uart_print_nl("Flash initialized");
-
     for (int chip = 1; chip <= 4; chip++)
     {
         uart_print_esc(NEW_LINE);
@@ -47,7 +37,7 @@ int main()
 
         /* erase byte */
         flash_erase(row, chip);
-        uart_print_nl("Erased block");
+        uart_print_ln("Erased block");
 
         /* reread byte */
         data = flash_read(row, column, chip);
@@ -70,6 +60,5 @@ int main()
 
         flash_disable(chip);
     }
-    return 0;
 }
 

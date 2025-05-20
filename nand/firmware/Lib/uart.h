@@ -6,7 +6,7 @@
 #define HOME_CURSOR "[H"
 #define CLEAR_SCREEN "[2J"
 
-void uart_init();
+void uart_init(void);
 void uart_print(char *string);
 void uart_print_ln(char *string);
 void uart_print_esc(char *code);

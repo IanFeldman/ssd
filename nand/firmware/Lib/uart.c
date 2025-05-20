@@ -2,7 +2,7 @@
 #include "uart.h"
 
 /* Initialize uart peripheral. */
-void uart_init()
+void uart_init(void)
 {
     /* ubrr = clock / (16 * baud) - 1 */
     uint16_t ubrr = 103;

@@ -35,6 +35,8 @@
  */
 
 #include "MassStorage.h"
+#include "Lib/flash.h"
+#include "Lib/test.h"
 #include "Lib/uart.h"
 
 /** LUFA Mass Storage Class driver interface configuration and state information. This structure is
@@ -103,6 +105,7 @@ void SetupHardware(void)
 
 	/* Hardware Initialization */
 	uart_init();
+        flash_init();
 	Dataflash_Init();
 	USB_Init();
 

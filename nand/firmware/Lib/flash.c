@@ -9,7 +9,7 @@ static const uint8_t CHIP_ENABLE_TABLE_G[5] =
 
 
 /* Set data lines as inputs */
-static void set_data_input()
+static void set_data_input(void)
 {
     /* port B: input without pulldowns */
     DDRB = 0x00;
@@ -19,7 +19,7 @@ static void set_data_input()
 
 
 /* Set data lines as outputs */
-static void set_data_output()
+static void set_data_output(void)
 {
     /* port B: output default 0 */
     DDRB = 0xFF;
@@ -124,7 +124,7 @@ static void wait_ready(int chip)
 
 
 /* Initialize pin connections */
-void flash_init()
+void flash_init(void)
 {
     /* set data pin directions */
     set_data_output();

@@ -50,7 +50,7 @@
 #define ERASE_BLOCK_CMD      0x60
 #define END_ERASE_BLOCK_CMD  0xD0
 
-void flash_init();
+void flash_init(void);
 void flash_enable(int chip);
 void flash_disable(int chip);
 void flash_read_id(uint8_t *id, int chip);
