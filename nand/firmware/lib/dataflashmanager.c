@@ -28,16 +28,27 @@
   this software.
 */
 
-/** \file
- *
- *  Functions to manage the physical Dataflash media, including reading and writing of
- *  blocks of data. These functions are called by the SCSI layer when data must be stored
- *  or retrieved to/from the physical storage media. If a different media is used (such
- *  as a SD card or EEPROM), functions similar to these will need to be generated.
+/*
+ * Edited by Ian Feldman and Grayson Parker
+ */
+
+/*
+ * 1. The first page of every block indicates if the block is used or not.
+ *      + All 0xFF: unused
+ *      + All 0x00: used
+ * 2. Receive some data to write from usb.
+ * 3. Find the physical block in flash.
+ * 4. If that block is unused, just write data to it.
+ * 5. If the block is used, read each page individually,
+ *    and write it to the next free block (include new page data).
+ * 6. Erase the first block and copy it the new one back.
+ *      + Ideally we would map logical to physical blocks, but
+ *        there is not enough space to do this.
  */
 
 #define  INCLUDE_FROM_DATAFLASHMANAGER_C
 #include "dataflashmanager.h"
+#include "flash.h"
 
 /** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
  *  the pre-selected data OUT endpoint. This routine reads in OS sized blocks from the endpoint and writes
@@ -51,6 +62,15 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
                                   const uint32_t BlockAddress,
                                   uint16_t TotalBlocks)
 {
+    /* get starting address */
+    uint16_t flash_block  = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) / (PAGES_PER_BLOCK * PAGE_SIZE));
+    uint32_t flash_page   = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) / PAGE_SIZE);
+    uint16_t flash_offset = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) % PAGE_SIZE);
+
+    /* TODO: select correct chip */
+    flash_enable(1);
+
+    /* check if block has been written to */
 }
 
 /** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into

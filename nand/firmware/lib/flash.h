@@ -5,6 +5,10 @@
 
 #define F_CPU 16000000UL
 #define CHIP_COUNT 4
+#define PAGE_SIZE 2048
+#define PAGE_SIZE_TOTAL (PAGE_SIZE + 64)
+#define PAGES_PER_BLOCK 64
+#define BLOCKS_PER_CHIP 4096
 
 /* port c, active low, outputs */
 #define CHIP_ENABLE_1     (1 << PC2)

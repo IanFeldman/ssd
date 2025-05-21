@@ -94,7 +94,6 @@ void SetupHardware(void)
     /* Hardware Initialization */
     uart_init();
     flash_init();
-    Dataflash_Init();
     USB_Init();
 
     /* Clear uart terminal */
@@ -156,9 +155,7 @@ bool CALLBACK_MS_Device_SCSICommandReceived(USB_ClassInfo_MS_Device_t* const MSI
 {
     bool CommandSuccess;
 
-    uart_print_ln("USB received SCSI command");
     CommandSuccess = SCSI_DecodeSCSICommand(MSInterfaceInfo);
-    uart_print_ln("USB handled SCSI command");
 
     return CommandSuccess;
 }
