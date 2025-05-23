@@ -46,6 +46,7 @@
     #include <third_party/LUFA/Drivers/USB/USB.h>
     #include <third_party/LUFA/Drivers/Board/Dataflash.h>
 
+    #define BLOCK_USE_SIZE 32
     #define VIRTUAL_MEMORY_BLOCK_SIZE 512
 
     /* TODO: change these */

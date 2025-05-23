@@ -3,6 +3,11 @@
 
 #include <stdio.h>
 
+/*
+ * row = page
+ * col = offset
+ */
+
 #define F_CPU 16000000UL
 #define CHIP_COUNT 4
 #define PAGE_SIZE 2048
@@ -59,6 +64,8 @@ void flash_enable(int chip);
 void flash_disable(int chip);
 void flash_read_id(uint8_t *id, int chip);
 uint8_t flash_read(uint32_t row, uint16_t column, int chip);
+void flash_read_batch(uint32_t row, uint16_t column, int chip,
+        int size, uint8_t *data);
 void flash_program(uint32_t row, uint16_t column,
     uint8_t *data, int size, int chip);
 void flash_erase(uint32_t row, int chip);

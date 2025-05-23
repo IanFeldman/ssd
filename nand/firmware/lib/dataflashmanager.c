@@ -30,6 +30,7 @@
 
 /*
  * Edited by Ian Feldman and Grayson Parker
+ * May 2025
  */
 
 /*
@@ -50,6 +51,23 @@
 #include "dataflashmanager.h"
 #include "flash.h"
 
+
+/* Check if block is used. Pass in address row and chip. */
+static int BlockUsed(uint32_t block_row, int chip)
+{
+    uint8_t data[BLOCK_USE_SIZE];
+    memset(data, 0x00, BLOCK_USE_SIZE);
+    flash_read_batch(block_row, 0x0000, chip, BLOCK_USE_SIZE, data);
+
+    int used = 0xFF;
+    for (int i = 0; i < BLOCK_USE_SIZE; i++)
+    {
+        used &= data[i];
+    }
+    return !used;
+}
+
+
 /** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
  *  the pre-selected data OUT endpoint. This routine reads in OS sized blocks from the endpoint and writes
  *  them to the Dataflash in Dataflash page sized blocks.
@@ -62,15 +80,32 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
                                   const uint32_t BlockAddress,
                                   uint16_t TotalBlocks)
 {
-    /* get starting address */
-    uint16_t flash_block  = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) / (PAGES_PER_BLOCK * PAGE_SIZE));
-    uint32_t flash_page   = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) / PAGE_SIZE);
-    uint16_t flash_offset = ((BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE) % PAGE_SIZE);
+    /* raw byte address */
+    uint32_t byte_address = BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE;
+    /* raw block */
+    uint16_t flash_block = byte_address / (PAGES_PER_BLOCK * PAGE_SIZE);
+    /* select correct chip (idx at 0) */
+    int chip = flash_block / BLOCKS_PER_CHIP;
+    /* block on chip */
+    uint16_t flash_block_chip = flash_block - chip * BLOCKS_PER_CHIP;
+    /* row */
+    uint32_t flash_page_chip = (byte_address / PAGE_SIZE) - (chip * BLOCKS_PER_CHIP * PAGES_PER_BLOCK);
+    /* column */
+    uint16_t flash_offset_chip = byte_address % PAGE_SIZE;
 
-    /* TODO: select correct chip */
-    flash_enable(1);
+    /* enable chip (idx at 1 )*/
+    flash_enable(chip + 1);
 
     /* check if block has been written to */
+    uint32_t flash_block_row = flash_block_chip * PAGES_PER_BLOCK;
+    if (BlockUsed(flash_block_row, chip + 1))
+    {
+        /* Find the next free block */
+    }
+    else
+    {
+        /* write data to it */
+    }
 }
 
 /** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into

@@ -217,6 +217,22 @@ uint8_t flash_read(uint32_t row, uint16_t column, int chip)
 }
 
 
+/* Read many bytes from flash */
+void flash_read_batch(uint32_t row, uint16_t column, int chip,
+        int size, uint8_t *data)
+{
+    set_data_output();
+
+    /* read page into cache */
+    command_cycle(READ_PAGE_CMD);
+    latch_address_column(column);
+    latch_address_row(row);
+    command_cycle(END_READ_PAGE_CMD);
+    wait_ready(chip);
+    get_data(data, size);
+}
+
+
 /* Program data at address and column */
 void flash_program(uint32_t row, uint16_t column,
     uint8_t *data, int size, int chip)
