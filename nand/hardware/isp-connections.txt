@@ -1,0 +1,14 @@
+PCB | Arduino ISP
+----+------------
+GND | GND
+PC1 | 10 (RESET)
+PB2 | 11 (MOSI)
+PB1 | 13 (SCLK)
+3V3 | 3V3
+PB3 | 12 (MISO)
+
+PCB | SERIAL
+----+-------
+PD3 | RX (right)
+PD2 | TX (left)
+
