@@ -51,6 +51,7 @@
 #include "dataflashmanager.h"
 #include "flash.h"
 
+static uint8_t page_temp_g[PAGE_SIZE];
 
 /* Check if block is used. Pass in address row and chip. */
 static int BlockUsed(uint32_t block_row, int chip)
@@ -94,18 +95,59 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
     uint16_t flash_offset_chip = byte_address % PAGE_SIZE;
 
     /* enable chip (idx at 1 )*/
-    flash_enable(chip + 1);
+    int chip_id = chip + 1;
+    flash_enable(chip_id);
 
     /* check if block has been written to */
     uint32_t flash_block_row = flash_block_chip * PAGES_PER_BLOCK;
-    if (BlockUsed(flash_block_row, chip + 1))
+    uint32_t flash_block_row_temp = flash_block_row;
+    while (BlockUsed(flash_block_row_temp, chip_id))
     {
-        /* Find the next free block */
+        flash_block_row_temp = flash_block_row + PAGES_PER_BLOCK;
     }
-    else
+
+    /* now we have found a free block */
+    /* if the block we found is different than the target */
+    if (flash_block_row_temp != flash_block_row)
     {
-        /* write data to it */
+        /* copy pages over to this new block */
+        for (int page = 0; page < PAGES_PER_BLOCK; page++)
+        {
+            uint32_t old_row = flash_block_row + page;
+            uint32_t new_row = flash_block_row_temp + page;
+
+            /* if this is the page we want to overwrite */
+            if (page == (flash_page_chip % PAGES_PER_BLOCK))
+            {
+                /* read new data directly from USB */
+                Endpoint_Read_Stream_LE(page_temp_g, PAGE_SIZE, NULL);
+            }
+            else
+            {
+                /* copy existing page from original block */
+                flash_read_batch(old_row, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+            }
+
+            /* write page */
+            flash_program(new_row, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
+        }
+
+        /* erase original block */
+        flash_erase(flash_block_row, chip_id);
+
+        /* copy free block back */
+        for (int page = 0; page < PAGES_PER_BLOCK; page++)
+        {
+            uint32_t old_row = flash_block_row + page;
+            uint32_t new_row = flash_block_row_temp + page;
+
+            flash_read_batch(old_row, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+        }
+
+        /* reset temp block */
     }
+
+    flash_disable(chip_id);
 }
 
 /** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into
