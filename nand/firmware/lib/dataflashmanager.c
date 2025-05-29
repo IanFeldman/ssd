@@ -81,43 +81,56 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
                                   const uint32_t BlockAddress,
                                   uint16_t TotalBlocks)
 {
-    /* raw byte address */
+    /* compute absolute byte offset into virtual memory */
     uint32_t byte_address = BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE;
-    /* raw block */
-    uint16_t flash_block = byte_address / (PAGES_PER_BLOCK * PAGE_SIZE);
-    /* select correct chip (idx at 0) */
-    int chip = flash_block / BLOCKS_PER_CHIP;
-    /* block on chip */
-    uint16_t flash_block_chip = flash_block - chip * BLOCKS_PER_CHIP;
-    /* row */
-    uint32_t flash_page_chip = (byte_address / PAGE_SIZE) - (chip * BLOCKS_PER_CHIP * PAGES_PER_BLOCK);
-    /* column */
-    uint16_t flash_offset_chip = byte_address % PAGE_SIZE;
 
-    /* enable chip (idx at 1 )*/
-    int chip_id = chip + 1;
+    /* compute which usable page (excluding reserved pages) */
+    uint32_t usable_page_index = byte_address / PAGE_SIZE;
+
+    /* determine which block this maps to */
+    uint16_t flash_block = usable_page_index / USABLE_PAGES_PER_BLOCK;
+
+    /* determine which usable page within that block */
+    uint32_t page_in_block = usable_page_index % USABLE_PAGES_PER_BLOCK;
+
+    /* select correct chip (idx at 1) */
+    int chip_id = (flash_block / BLOCKS_PER_CHIP) + 1;
+
+    /* block index within chip */
+    uint16_t block_on_chip = flash_block % BLOCKS_PER_CHIP;
+
+    /* final flash row (add +1 to skip reserved page 0 in each block) */
+    uint32_t page_on_chip = block_on_chip * PAGES_PER_BLOCK + (page_in_block + 1);
+
+    /* final flash column */
+    uint16_t byte_on_page = byte_address % PAGE_SIZE;
+
+    /* enable chip */
     flash_enable(chip_id);
 
-    /* check if block has been written to */
-    uint32_t flash_block_row = flash_block_chip * PAGES_PER_BLOCK;
-    uint32_t flash_block_row_temp = flash_block_row;
-    while (BlockUsed(flash_block_row_temp, chip_id))
+    /* page of start of the target block */
+    uint32_t target_block_start_page = block_on_chip * PAGES_PER_BLOCK;
+    uint32_t temp_block_start_page   = target_block_start_page;
+
+    /* find free block */
+    while (BlockUsed(temp_block_start_page, chip_id))
     {
-        flash_block_row_temp = flash_block_row + PAGES_PER_BLOCK;
+        temp_block_start_page += PAGES_PER_BLOCK;
     }
 
     /* now we have found a free block */
     /* if the block we found is different than the target */
-    if (flash_block_row_temp != flash_block_row)
+    if (temp_block_start_page != target_block_start_page)
     {
         /* copy pages over to this new block */
-        for (int page = 0; page < PAGES_PER_BLOCK; page++)
+        for (int page = 0; page < USABLE_PAGES_PER_BLOCK; page++)
         {
-            uint32_t old_row = flash_block_row + page;
-            uint32_t new_row = flash_block_row_temp + page;
+            /* start after reserved page */
+            uint32_t old_page = target_block_start_page + page + 1;
+            uint32_t new_page = temp_block_start_page + page + 1;
 
             /* if this is the page we want to overwrite */
-            if (page == (flash_page_chip % PAGES_PER_BLOCK))
+            if (page == page_in_block)
             {
                 /* read new data directly from USB */
                 Endpoint_Read_Stream_LE(page_temp_g, PAGE_SIZE, NULL);
@@ -125,30 +138,46 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
             else
             {
                 /* copy existing page from original block */
-                flash_read_batch(old_row, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+                flash_read_batch(old_page, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
             }
 
             /* write page */
-            flash_program(new_row, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
+            flash_program(new_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
         }
 
         /* erase original block */
-        flash_erase(flash_block_row, chip_id);
+        flash_erase(target_block_start_page, chip_id);
 
-        /* copy free block back */
-        for (int page = 0; page < PAGES_PER_BLOCK; page++)
+        /* copy temp block back to target*/
+        for (int page = 0; page < USABLE_PAGES_PER_BLOCK; page++)
         {
-            uint32_t old_row = flash_block_row + page;
-            uint32_t new_row = flash_block_row_temp + page;
+            /* start after reserved page */
+            uint32_t old_page = target_block_start_page + page + 1;
+            uint32_t new_page = temp_block_start_page + page + 1;
 
-            flash_read_batch(old_row, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+            /* read page */
+            flash_read_batch(new_page, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+            /* write page */
+            flash_program(old_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
         }
 
         /* reset temp block */
+        flash_erase(temp_block_start_page, chip_id);
+    }
+    /* if the block we found is target */
+    else
+    {
+        /* program the exact spot we want to */
+        Endpoint_Read_Stream_LE(page_temp_g, PAGE_SIZE, NULL);
+        flash_program(page_on_chip, byte_on_page, page_temp_g, PAGE_SIZE, chip_id);
+        /* mark the block as used by setting first page to zeros */
+        memset(page_temp_g, 0x00, PAGE_SIZE);
+        flash_program(target_block_start_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
     }
 
     flash_disable(chip_id);
 }
+
 
 /** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into
  *  the pre-selected data IN endpoint. This routine reads in Dataflash page sized blocks from the Dataflash
@@ -163,6 +192,7 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
                                  uint16_t TotalBlocks)
 {
 }
+
 
 /** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
  *  the given RAM buffer. This routine reads in OS sized blocks from the buffer and writes them to the
@@ -179,6 +209,7 @@ void DataflashManager_WriteBlocks_RAM(const uint32_t BlockAddress,
 {
 }
 
+
 /** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into
  *  the preallocated RAM buffer. This routine reads in Dataflash page sized blocks from the Dataflash
  *  and writes them in OS sized blocks to the given buffer. This can be linked to FAT libraries to read
@@ -194,10 +225,12 @@ void DataflashManager_ReadBlocks_RAM(const uint32_t BlockAddress,
 {
 }
 
+
 /** Disables the Dataflash memory write protection bits on the board Dataflash ICs, if enabled. */
 void DataflashManager_ResetDataflashProtections(void)
 {
 }
+
 
 /** Performs a simple test on the attached Dataflash IC(s) to ensure that they are working.
  *
@@ -207,3 +240,4 @@ bool DataflashManager_CheckDataflashOperation(void)
 {
     return true;
 }
+

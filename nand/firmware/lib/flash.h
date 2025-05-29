@@ -13,6 +13,7 @@
 #define PAGE_SIZE 2048
 #define PAGE_SIZE_TOTAL (PAGE_SIZE + 64)
 #define PAGES_PER_BLOCK 64
+#define USABLE_PAGES_PER_BLOCK (PAGES_PER_BLOCK - 1)
 #define BLOCKS_PER_CHIP 4096
 
 /* port c, active low, outputs */
