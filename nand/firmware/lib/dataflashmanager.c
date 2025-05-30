@@ -191,38 +191,27 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
                                  const uint32_t BlockAddress,
                                  uint16_t TotalBlocks)
 {
-}
+    uint8_t buffer[VIRTUAL_MEMORY_BLOCK_SIZE];
 
+    for (int i = 0; i < TotalBlocks; i++)
+    {
+        uint32_t byte_offset = (BlockAddress + i) * VIRTUAL_MEMORY_BLOCK_SIZE;
 
-/** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
- *  the given RAM buffer. This routine reads in OS sized blocks from the buffer and writes them to the
- *  Dataflash in Dataflash page sized blocks. This can be linked to FAT libraries to write files to the
- *  Dataflash.
- *
- *  \param[in] BlockAddress  Data block starting address for the write sequence
- *  \param[in] TotalBlocks   Number of blocks of data to write
- *  \param[in] BufferPtr     Pointer to the data source RAM buffer
- */
-void DataflashManager_WriteBlocks_RAM(const uint32_t BlockAddress,
-                                      uint16_t TotalBlocks,
-                                      uint8_t* BufferPtr)
-{
-}
+        uint32_t usable_page_index = byte_offset / PAGE_SIZE;
+        uint16_t flash_block       = usable_page_index / USABLE_PAGES_PER_BLOCK;
+        uint32_t page_in_block     = usable_page_index % USABLE_PAGES_PER_BLOCK;
+        int chip_id                = (flash_block / BLOCKS_PER_CHIP) + 1;
+        uint16_t block_on_chip     = flash_block % BLOCKS_PER_CHIP;
+        uint32_t page_on_chip      = block_on_chip * PAGES_PER_BLOCK + (page_in_block + 1);
+        uint16_t byte_on_page      = byte_offset % PAGE_SIZE;
 
+        flash_enable(chip_id);
 
-/** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into
- *  the preallocated RAM buffer. This routine reads in Dataflash page sized blocks from the Dataflash
- *  and writes them in OS sized blocks to the given buffer. This can be linked to FAT libraries to read
- *  the files stored on the Dataflash.
- *
- *  \param[in] BlockAddress  Data block starting address for the read sequence
- *  \param[in] TotalBlocks   Number of blocks of data to read
- *  \param[out] BufferPtr    Pointer to the data destination RAM buffer
- */
-void DataflashManager_ReadBlocks_RAM(const uint32_t BlockAddress,
-                                     uint16_t TotalBlocks,
-                                     uint8_t* BufferPtr)
-{
+        flash_read_batch(page_on_chip, byte_on_page, chip_id, VIRTUAL_MEMORY_BLOCK_SIZE, buffer);
+        Endpoint_Write_Stream_LE(buffer, VIRTUAL_MEMORY_BLOCK_SIZE, NULL);
+
+        flash_disable(chip_id);
+    }
 }
 
 
