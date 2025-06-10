@@ -279,6 +279,12 @@ void ProcessRead(void)
         SendEsc(NEW_LINE);
         return;
     }
+    if (CheckHexPrefix(row_str) || CheckHexPrefix(col_str))
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid format");
+        SendEsc(NEW_LINE);
+        return;
+    }
 
     uint32_t row = hex_str_to_int(row_str, 6);
     uint16_t col = hex_str_to_int(col_str, 4);
@@ -332,6 +338,12 @@ void ProcessWrite(void)
         SendEsc(NEW_LINE);
         return;
     }
+    if (CheckHexPrefix(row_str) || CheckHexPrefix(col_str) || CheckHexPrefix(dat_str))
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid format");
+        SendEsc(NEW_LINE);
+        return;
+    }
 
     uint32_t row = hex_str_to_int(row_str, 6);
     uint16_t col = hex_str_to_int(col_str, 4);
@@ -367,6 +379,12 @@ void ProcessErase(void)
         SendEsc(NEW_LINE);
         return;
     }
+    if (CheckHexPrefix(row_str))
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid format");
+        SendEsc(NEW_LINE);
+        return;
+    }
 
     uint32_t row = hex_str_to_int(row_str, 6);
 
@@ -379,6 +397,18 @@ void ProcessErase(void)
     flash_enable(chip_id);
     flash_erase(chip_row, chip_id);
     flash_disable(chip_id);
+}
+
+/* Return 0 if string has 0x or 0X at start, 1 if not */
+int CheckHexPrefix(char *str)
+{
+    if (!str)
+    {
+        return 1;
+    }
+    int first = (str[0] == '0');
+    int second = (str[1] == 'X' || str[1] == 'x');
+    return !(first && second);
 }
 
 /* Send ANSI escape sequence */

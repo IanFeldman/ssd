@@ -65,6 +65,7 @@ void ProcessHelp(void);
 void ProcessRead(void);
 void ProcessWrite(void);
 void ProcessErase(void);
+int CheckHexPrefix(char *str);
 void SendEsc(char *sequence);
 void SendPrefix(void);
 void EVENT_USB_Device_Connect(void);
