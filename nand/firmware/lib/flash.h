@@ -8,15 +8,17 @@
  * col = offset
  */
 
-#define CHIP_COUNT 4
+/*
 #define PAGES_PER_BLOCK 64
 #define BLOCKS_PER_CHIP 4096
-
-/*
 #define PAGE_SIZE 2048
 #define PAGE_SIZE_TOTAL (PAGE_SIZE + 64)
 #define USABLE_PAGES_PER_BLOCK (PAGES_PER_BLOCK - 1)
 */
+
+#define CHIP_COUNT 4
+#define ROW_MAX 0x100000
+#define COL_MAX 0x0800 /* ignore 64 byte padding */
 
 /* port c, active low, outputs */
 #define CHIP_ENABLE_1     (1 << PC2)

@@ -216,13 +216,13 @@ void ProcessHelp(void)
         "Use this interface to read, write, or erase any portion of memory.");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "There are 4 nand chips, 4k blocks per chip, 64 pages per block, 2k + 64 bytes per page.");
+        "There are 4 nand chips, 4k blocks per chip, 64 pages per block, 2k bytes per page.");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "[row] is a three-byte hex page address (max 0x100000).");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "[column] is a two-byte hex offset within a page (max 0x0840).");
+        "[column] is a two-byte hex offset within a page (max 0x0800).");
     SendEsc(NEW_LINE);
     */
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
@@ -290,10 +290,30 @@ void ProcessRead(void)
     uint16_t col = hex_str_to_int(col_str, 4);
     uint16_t siz = (uint16_t)atoi(siz_str);
 
+    /* check if address out of bounds */
+    if (row >= ROW_MAX || col >= COL_MAX)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Address out of bounds");
+        SendEsc(NEW_LINE);
+        return;
+    }
+
+    /* determine size */
+    int max_size = COL_MAX - col;
+    if (siz > max_size)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Reading only to page boundary");
+        SendEsc(NEW_LINE);
+        siz = max_size;
+    }
+
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
+
+    /* keep usb alive */
+    USB_USBTask();
 
     /* read data */
     flash_enable(chip_id);
@@ -349,10 +369,21 @@ void ProcessWrite(void)
     uint16_t col = hex_str_to_int(col_str, 4);
     uint8_t  dat = hex_str_to_int(dat_str, 2);
 
+    /* check if address out of bounds */
+    if (row >= ROW_MAX || col >= COL_MAX)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Address out of bounds");
+        SendEsc(NEW_LINE);
+        return;
+    }
+
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
+
+    /* keep usb alive */
+    USB_USBTask();
 
     /* write data */
     flash_enable(chip_id);
@@ -386,12 +417,22 @@ void ProcessErase(void)
         return;
     }
 
+    /* check if address out of bounds */
     uint32_t row = hex_str_to_int(row_str, 6);
+    if (row >= ROW_MAX)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Address out of bounds");
+        SendEsc(NEW_LINE);
+        return;
+    }
 
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
+
+    /* keep usb alive */
+    USB_USBTask();
 
     /* erase data */
     flash_enable(chip_id);
