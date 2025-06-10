@@ -8,7 +8,6 @@
  * col = offset
  */
 
-#define F_CPU 16000000UL
 #define CHIP_COUNT 1
 #define PAGES_PER_BLOCK 64
 #define BLOCKS_PER_CHIP 4096

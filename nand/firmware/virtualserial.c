@@ -34,6 +34,9 @@
  */
 
 #include "virtualserial.h"
+#include "lib/flash.h"
+#include "lib/test.h"
+#include "lib/uart.h"
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
  *  passed to all CDC Class driver functions, so that multiple instances of the same class
@@ -85,8 +88,6 @@ int main(void)
 
     for (;;)
     {
-        CheckJoystickMovement();
-
         /* Must throw away unused bytes from the host, or it will lock up while waiting for the device */
         CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
 
@@ -106,8 +107,16 @@ void SetupHardware(void)
     clock_prescale_set(clock_div_1);
 
     /* Hardware Initialization */
-    // Joystick_Init();
+    uart_init();
+    flash_init();
     USB_Init();
+
+    /* Clear uart terminal */
+    uart_print_esc(CLEAR_SCREEN);
+    uart_print_esc(HOME_CURSOR);
+
+    /* Test flash */
+    // test_all();
 }
 
 /** Checks for changes in the position of the board joystick, sending strings to the host upon each change. */

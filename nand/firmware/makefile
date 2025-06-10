@@ -9,16 +9,18 @@
 #         LUFA Project Makefile.
 # --------------------------------------
 
-# Run "make help" for target help.
+# Edited by Ian Feldman and Grayson Parker
+# June 2025
 
 MCU          = at90usb1287
 ARCH         = AVR8
 BOARD        = USBKEY
-F_CPU        = 8000000
+F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = virtualserial
-SRC          = $(TARGET).c descriptors.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+SRC          = $(TARGET).c descriptors.c lib/flash.c lib/test.c lib/uart.c \
+               $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = third_party/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
