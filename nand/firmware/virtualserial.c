@@ -133,31 +133,35 @@ void Poll(void)
         char ch = (char)received_byte;
 
         /* submit line */
-        if (ch == '\n' || ch == '\r')
+        if (ch == '\n' || ch == '\r' || i == CMD_BUFFER_SIZE - 1)
         {
+            command_buffer[i] = '\0';
             ProcessLine(command_buffer, i);
+            CDC_Device_Flush(&VirtualSerial_CDC_Interface);
             i = 0;
+            return;
+        }
+        /* backspace */
+        if ((ch == '\b' || ch  == 127))
+        {
+            if (i > 0)
+            {
+                SendEsc(RETREAT_CURSOR);
+                CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ' ');
+                SendEsc(RETREAT_CURSOR);
+                i--;
+            }
+            return;
         }
         /* save to buffer and echo back */
-        else
-        {
-            command_buffer[i++] = ch;
-            CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ch);
-        }
-        /* auto-process if buffer is full */
-        if (i == CMD_BUFFER_SIZE)
-        {
-            ProcessLine(command_buffer, i);
-            i = 0;
-        }
+        command_buffer[i++] = ch;
+        CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ch);
     }
 }
 
 void ProcessLine(char *buffer, int size)
 {
-    uart_print_ln("Processing line");
     SendEsc(NEW_LINE);
-    SendPrefix();
 
     /* split line by spaces */
     char *token = strtok(buffer, " ");
@@ -166,42 +170,37 @@ void ProcessLine(char *buffer, int size)
         /* usage: clear */
         if (!strcmp(token, CLEAR_CMD_STR))
         {
-            uart_print_ln("CLEAR");
             SendEsc(CLEAR_SCREEN);
             SendEsc(HOME_CURSOR);
             SendPrefix();
             return;
         }
         /* usage: help */
-        if (!strcmp(token, HELP_CMD_STR))
+        else if (!strcmp(token, HELP_CMD_STR))
         {
-            CDC_Device_SendString(&VirtualSerial_CDC_Interface, "USAGE\n");
-            return;
+            CDC_Device_SendString(&VirtualSerial_CDC_Interface, "..");
+            SendEsc(NEW_LINE);
         }
         /* usage: read column row size */
-        if (!strcmp(token, READ_CMD_STR))
+        else if (!strcmp(token, READ_CMD_STR))
         {
-            uart_print_ln("Read");
             char *column = strtok(NULL, " ");
             char *row = strtok(NULL, " ");
             char *size = strtok(NULL, " ");
-            return;
         }
-        if (!strcmp(token, WRITE_CMD_STR))
+        else if (!strcmp(token, WRITE_CMD_STR))
         {
-            return;
         }
-        if (!strcmp(token, ERASE_CMD_STR))
+        else if (!strcmp(token, ERASE_CMD_STR))
         {
-            return;
         }
-
-        token = strtok(NULL, " ");
+        else
+        {
+            CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Unknown command");
+            SendEsc(NEW_LINE);
+        }
     }
-    else
-    {
-        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Usage error\n");
-    }
+    SendPrefix();
 }
 
 /* Send ANSI escape sequence */

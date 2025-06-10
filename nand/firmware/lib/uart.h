@@ -5,6 +5,7 @@
 #define NEW_LINE "[1E"
 #define HOME_CURSOR "[H"
 #define CLEAR_SCREEN "[2J"
+#define RETREAT_CURSOR "[1D"
 
 void uart_init(void);
 void uart_print(char *string);

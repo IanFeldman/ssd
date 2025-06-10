@@ -40,6 +40,9 @@ include $(DMBS_PATH)/gcc.mk
 flash: $(TARGET).hex
 	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:$(TARGET).hex
 
+restart: $(TARGET).hex
+	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:asdf.hex
+
 fuses:
 	avrdude -c avrisp -p m32u2 -P /dev/ttyACM0 -b 19200 -U lfuse:w:0xFF:m -U hfuse:w:0xD9:m -U efuse:w:0xF4:m
 
