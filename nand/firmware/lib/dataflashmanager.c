@@ -106,9 +106,12 @@ void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceIn
                 uart_print_ln("Aborting command");
                 return;
             }
+
+            USB_USBTask();
         }
 
         flash_disable(chip_id);
+        USB_USBTask();
     }
 
     if (!(Endpoint_IsReadWriteAllowed()))
@@ -130,6 +133,32 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
         return;
     }
 
+    /* simulate boot sector */
+    if (BlockAddress == 0) {
+        static const uint8_t fat16_boot_sector[512] = {
+            0xEB, 0x3C, 0x90,                    // JMP + NOP
+            'M','S','D','O','S','5','.','0',     // OEM name
+            0x00, 0x02,                          // Bytes per sector = 512
+            0x01,                                // Sectors per cluster
+            0x01, 0x00,                          // Reserved sectors
+            0x01,                                // Number of FATs
+            0x00, 0x10,                          // Root dir entries
+            0x00, 0x10,                          // Total sectors (16)
+            0xF8,                                // Media descriptor
+            0x01, 0x00,                          // Sectors per FAT
+            0x3F, 0x00,                          // Sectors per track
+            0xFF, 0x00,                          // Number of heads
+            0x00, 0x00, 0x00, 0x00,              // Hidden sectors
+            0x00, 0x00, 0x00, 0x00,              // Large total sectors
+            // ...
+            [510] = 0x55, [511] = 0xAA           // Boot signature
+        };
+
+        Endpoint_Write_Stream_LE(fat16_boot_sector, 512, NULL);
+        Endpoint_ClearIN();
+        return;
+    }
+
     uart_print_ln("Reading blocks");
     for (uint16_t i = 0; i < TotalBlocks; i++)
     {
@@ -145,7 +174,7 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
         uint16_t bytes_in_block_div16 = 0;
         while (bytes_in_block_div16 < (VIRTUAL_MEMORY_BLOCK_SIZE >> 4))
         {
-            /* check if the endpoint is currently empty */
+            /* check if the endpoint is currently full */
             if (!(Endpoint_IsReadWriteAllowed()))
             {
                     /* clear the current endpoint bank */
@@ -154,7 +183,7 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
                     /* wait until the host has sent another packet */
                     if (Endpoint_WaitUntilReady())
                     {
-                        uart_print_ln("Aborting command");
+                        uart_print_ln("Aborting command until host sends another packet");
                         flash_disable(chip_id);
                         return;
                     }
@@ -175,13 +204,18 @@ void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInf
             /* check if the current command is being aborted by the host */
             if (MSInterfaceInfo->State.IsMassStoreReset)
             {
-                uart_print_ln("Aborting command");
+                uart_print_ln("Aborting command due to host");
                 flash_disable(chip_id);
                 return;
             }
+
+            USB_USBTask();
         }
 
         flash_disable(chip_id);
+
+        /* keep usb alive */
+        USB_USBTask();
     }
 
     if (!(Endpoint_IsReadWriteAllowed()))
