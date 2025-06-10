@@ -172,6 +172,7 @@ void ProcessLine(char *buffer, int size)
         /* usage: clear */
         if (!strcmp(token, CLEAR_CMD_STR))
         {
+            CDC_Device_Flush(&VirtualSerial_CDC_Interface);
             SendEsc(CLEAR_SCREEN);
             SendEsc(HOME_CURSOR);
             SendPrefix();
@@ -183,43 +184,17 @@ void ProcessLine(char *buffer, int size)
             CDC_Device_SendString(&VirtualSerial_CDC_Interface, "..");
             SendEsc(NEW_LINE);
         }
-        /* usage: read row col size */
         else if (!strcmp(token, READ_CMD_STR))
         {
-            /* TODO: refactor into function */
-            char *row_str = strtok(NULL, " ");
-            char *col_str = strtok(NULL, " ");
-            char *siz_str = strtok(NULL, " ");
-            if (!col_str || !row_str || !siz_str)
-            {
-                CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
-                SendEsc(NEW_LINE);
-            }
-            else
-            {
-                uint32_t row = hex_str_to_int(row_str, 3);
-                uint16_t col = hex_str_to_int(col_str, 2);
-                uint16_t siz = (uint16_t)atoi(siz_str);
-
-                /* TODO: determine chip */
-                int chip = 1;
-
-                /* read data */
-                flash_enable(chip);
-                uint8_t data[siz];
-                flash_read_batch(row, col, chip, siz, data);
-                flash_disable(chip);
-
-                /* TODO: function to print out bytes as hex */
-                CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Read data!");
-                SendEsc(NEW_LINE);
-            }
+            ProcessRead();
         }
         else if (!strcmp(token, WRITE_CMD_STR))
         {
+            ProcessWrite();
         }
         else if (!strcmp(token, ERASE_CMD_STR))
         {
+            ProcessErase();
         }
         else
         {
@@ -228,6 +203,61 @@ void ProcessLine(char *buffer, int size)
         }
     }
     SendPrefix();
+}
+
+/* Process read line
+ * usage: read row col size
+ */
+void ProcessRead()
+{
+    char *row_str = strtok(NULL, " ");
+    char *col_str = strtok(NULL, " ");
+    char *siz_str = strtok(NULL, " ");
+    if (!col_str || !row_str || !siz_str)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+        SendEsc(NEW_LINE);
+    }
+    else
+    {
+        uint32_t row = hex_str_to_int(row_str, 3);
+        uint16_t col = hex_str_to_int(col_str, 2);
+        uint16_t siz = (uint16_t)atoi(siz_str);
+
+        /* divide by (64 * 4096) */
+        uint32_t chip = row >> 18;
+        uint16_t chip_row = row - (chip << 18);
+        int chip_id = chip + 1;
+
+        /* read data */
+        flash_enable(chip_id);
+        uint8_t data[siz];
+        flash_read_batch(chip_row, col, chip_id, siz, data);
+        flash_disable(chip_id);
+
+        /* TODO: function to print out bytes as hex */
+        char byte[4] = { '\0', '\0', ' ', '\0' };
+        int i, j;
+        for (i = 0, j = 0; i < siz; i++, j++)
+        {
+            byte_to_hex_str(data[i], byte);
+            CDC_Device_SendString(&VirtualSerial_CDC_Interface, byte);
+            if (j * strlen(byte) >= TERMINAL_WIDTH)
+            {
+                SendEsc(NEW_LINE);
+                j = -1;
+            }
+        }
+        SendEsc(NEW_LINE);
+    }
+}
+
+void ProcessWrite(void)
+{
+}
+
+void ProcessErase(void)
+{
 }
 
 /* Send ANSI escape sequence */

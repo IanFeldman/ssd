@@ -28,3 +28,12 @@ uint32_t hex_str_to_int(char *val, int len)
     return result;
 }
 
+/* Convert byte integeter to hex string.
+ * String res must be of size 2
+ */
+void byte_to_hex_str(uint8_t val, char *res)
+{
+    res[0] = "0123456789ABCDEF"[val >> 4];
+    res[1] = "0123456789ABCDEF"[val & 0x0F];
+}
+

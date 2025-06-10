@@ -44,6 +44,8 @@
 #define WRITE_CMD_STR "write"
 #define ERASE_CMD_STR "erase"
 
+#define TERMINAL_WIDTH 80
+
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include <avr/power.h>
@@ -56,6 +58,9 @@
 void SetupHardware(void);
 void Poll(void);
 void ProcessLine(char *buffer, int size);
+void ProcessRead(void);
+void ProcessWrite(void);
+void ProcessErase(void);
 void SendEsc(char *sequence);
 void SendPrefix(void);
 void EVENT_USB_Device_Connect(void);
