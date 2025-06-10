@@ -31,12 +31,43 @@ The following targets are supported by this module:
 <table>
  <tbody>
    <tr>
+    <td>avrdude-lfuse</td>
+    <td>Program the device low fuse. Requires AVRDUDE_LFUSE variable set.</td>
+   </tr>
+   <tr>
+    <td>avrdude-hfuse</td>
+    <td>Program the device high fuse. Requires AVRDUDE_HFUSE variable set.</td>
+   </tr>
+   <tr>
+    <td>avrdude-efuse</td>
+    <td>Program the device extended fuse. Requires AVRDUDE_EFUSE variable set.</td>
+   </tr>
+   <tr>
+    <td>avrdude-lock</td>
+    <td>Program the device lock bits. Requires AVRDUDE_LOCK variable set.</td>
+   </tr>
+   <tr>
+    <td>avrdude-fuses</td>
+    <td>
+     Program the device fuses (lfuse, hfuse, efuse, lock bits).<br>
+     Requires AVRDUDE_LFUSE, AVRDUDE_HFUSE and AVRDUDE_LOCK variable set. AVRDUDE_EFUSE is optional.
+    </td>
+   </tr>
+   <tr>
     <td>avrdude</td>
     <td>Program the device FLASH memory with the application's executable data.</td>
    </tr>
    <tr>
     <td>avrdude-ee</td>
     <td>Program the device EEPROM memory with the application's EEPROM data.</td>
+   </tr>
+   <tr>
+    <td>avrdude-all</td>
+    <td>Same as avrdude + avrdude-fuses.</td>
+   </tr>
+   <tr>
+    <td>avrdude-all-ee</td>
+    <td>Same as avrdude + avrdude-ee + avrdude-fuses.</td>
    </tr>
  </tbody>
 </table>
@@ -68,6 +99,10 @@ be assumed.
 <table>
  <tbody>
    <tr>
+    <td>AVRDUDE_MCU</td>
+    <td>Override the `MCU` variable for `avrdude`. On some controllers, `avrdude` expects another spelling than the compiler needs. Default is `MCU`.</td>
+   </tr>
+   <tr>
     <td>AVRDUDE_PROGRAMMER</td>
     <td>Name of the programmer/debugger tool or bootloader to communicate with (e.g. `jtagicemkii`). Default is `jtagicemkii`.</td>
    </tr>
@@ -82,6 +117,30 @@ be assumed.
    <tr>
     <td>AVRDUDE_MEMORY</td>
     <td>Memory space to program when executing the `avrdude` target (e.g. 'application` for an XMEGA device). Default is `flash`.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_BAUD</td>
+    <td>Baud rate to use when executing the `avrdude` target (e.g. '115200` for an Optiboot device). Default is empty.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_BITCLK</td>
+    <td>ISP bit clock period in microseconds to use when executing the `avrdude` target (format: float). Must be minimum 4x longer than MCU clock period. Default is 1 us.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_HFUSE</td>
+    <td>Fuse setting to use when executing the `avrdude-hfuse` target (format: 0x??). Default is empty.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_EFUSE</td>
+    <td>Fuse setting to use when executing the `avrdude-efuse` target (format: 0x??). Default is empty.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_LFUSE</td>
+    <td>Fuse setting to use when executing the `avrdude-lfuse` target (format: 0x??). Default is empty.</td>
+   </tr>
+   <tr>
+    <td>AVRDUDE_LOCK</td>
+    <td>Bit bits setting to use when executing the `avrdude-lock` target (format: 0x??). Default is empty.</td>
    </tr>
  </tbody>
 </table>
@@ -119,6 +178,13 @@ this module.
 
 The changes to this module since its initial release are listed below, as of the
 DMBS version where the change was made.
+
+### 20210412
+Made `AVRDUDE_EFUSE` optional for `avrdude-fuses` because not every AVR has this fuse.
+
+### 20171231
+Added `AVRDUDE_BAUD`, `AVRDUDE_HFUSE`, `AVRDUDE_EFUSE`, `AVRDUDE_LFUSE` and
+`AVRDUDE_LOCK` optional variables.
 
 ### 20160403
 Initial release.

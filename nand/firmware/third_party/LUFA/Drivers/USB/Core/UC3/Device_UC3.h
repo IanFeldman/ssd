@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -68,7 +68,7 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** \name USB Device Mode Option Masks */
-			//@{
+			/**@{*/
 			/** Mask for the Options parameter of the \ref USB_Init() function. This indicates that the
 			 *  USB interface should be initialized in low speed (1.5Mb/s) mode.
 			 *
@@ -88,7 +88,7 @@
 				 */
 				#define USB_DEVICE_OPT_HIGHSPEED           (1 << 1)
 			#endif
-			//@}
+			/**@}*/
 
 			#if (!defined(NO_INTERNAL_SERIAL) && \
 			     (defined(USB_SERIES_UC3A3_AVR32) || defined(USB_SERIES_UC3A4_AVR32) || \
@@ -102,7 +102,9 @@
 				 *  On unsupported devices, this will evaluate to \ref NO_DESCRIPTOR and so will force the host to create a pseudo-serial
 				 *  number for the device.
 				 */
-				#define USE_INTERNAL_SERIAL             0xDC
+				#ifndef USE_INTERNAL_SERIAL
+					#define USE_INTERNAL_SERIAL         0xDC
+				#endif
 
 				/** Length of the device's unique internal serial number, in bits, if present on the selected microcontroller
 				 *  model.
@@ -114,6 +116,7 @@
 				 */
 				#define INTERNAL_SERIAL_START_ADDRESS   0x80800204
 			#else
+				#undef	USE_INTERNAL_SERIAL
 				#define USE_INTERNAL_SERIAL             NO_DESCRIPTOR
 
 				#define INTERNAL_SERIAL_LENGTH_BITS     0
@@ -147,7 +150,7 @@
 			 *
 			 *  \return Current USB frame number from the USB controller.
 			 */
-			static inline uint16_t USB_Device_GetFrameNumber(void) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline uint16_t USB_Device_GetFrameNumber(void)
 			{
 				return AVR32_USBB.UDFNUM.fnum;
@@ -160,7 +163,7 @@
 				 *
 				 *  \note Not available when the \c NO_SOF_EVENTS compile time token is defined.
 				 */
-				static inline void USB_Device_EnableSOFEvents(void) ATTR_ALWAYS_INLINE;
+				ATTR_ALWAYS_INLINE
 				static inline void USB_Device_EnableSOFEvents(void)
 				{
 					USB_INT_Enable(USB_INT_SOFI);
@@ -171,7 +174,7 @@
 				 *
 				 *  \note Not available when the \c NO_SOF_EVENTS compile time token is defined.
 				 */
-				static inline void USB_Device_DisableSOFEvents(void) ATTR_ALWAYS_INLINE;
+				ATTR_ALWAYS_INLINE
 				static inline void USB_Device_DisableSOFEvents(void)
 				{
 					USB_INT_Disable(USB_INT_SOFI);
@@ -181,13 +184,13 @@
 	/* Private Interface - For use in library only: */
 	#if !defined(__DOXYGEN__)
 		/* Inline Functions: */
-			static inline void USB_Device_SetLowSpeed(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetLowSpeed(void)
 			{
 				AVR32_USBB.UDCON.ls      = true;
 			}
 
-			static inline void USB_Device_SetFullSpeed(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetFullSpeed(void)
 			{
 				AVR32_USBB.UDCON.ls      = false;
@@ -197,7 +200,7 @@
 			}
 
 			#if defined(USB_DEVICE_OPT_HIGHSPEED)
-			static inline void USB_Device_SetHighSpeed(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetHighSpeed(void)
 			{
 				AVR32_USBB.UDCON.ls      = false;
@@ -205,13 +208,13 @@
 			}
 			#endif
 
-			static inline void USB_Device_SetDeviceAddress(const uint8_t Address) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetDeviceAddress(const uint8_t Address)
 			{
 				AVR32_USBB.UDCON.uadd  = Address;
 			}
 
-			static inline void USB_Device_EnableDeviceAddress(const uint8_t Address) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_EnableDeviceAddress(const uint8_t Address)
 			{
 				(void)Address;
@@ -219,14 +222,14 @@
 				AVR32_USBB.UDCON.adden = true;
 			}
 
-			static inline bool USB_Device_IsAddressSet(void) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline bool USB_Device_IsAddressSet(void)
 			{
 				return AVR32_USBB.UDCON.adden;
 			}
 
 			#if (USE_INTERNAL_SERIAL != NO_DESCRIPTOR)
-			static inline void USB_Device_GetSerialString(uint16_t* const UnicodeString) ATTR_NON_NULL_PTR_ARG(1);
+			ATTR_NON_NULL_PTR_ARG(1)
 			static inline void USB_Device_GetSerialString(uint16_t* const UnicodeString)
 			{
 				uint_reg_t CurrentGlobalInt = GetGlobalInterruptMask();

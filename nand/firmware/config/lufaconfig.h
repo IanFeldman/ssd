@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -27,17 +27,6 @@
   arising out of or in connection with the use or performance of
   this software.
 */
-
-/** \file
- *  \brief LUFA Library Configuration Header File
- *
- *  This header file is used to configure LUFA's compile time options,
- *  as an alternative to the compile time constants supplied through
- *  a makefile.
- *
- *  For information on what each token does, refer to the LUFA
- *  manual section "Summary of Compile Tokens".
- */
 
 #ifndef _LUFA_CONFIG_H_
 #define _LUFA_CONFIG_H_
@@ -124,4 +113,3 @@
 
     #endif
 #endif
-

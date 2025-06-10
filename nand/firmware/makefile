@@ -9,20 +9,16 @@
 #         LUFA Project Makefile.
 # --------------------------------------
 
-#
-# Edited by Ian Feldman and Grayson Parker
-# May 2025
-#
+# Run "make help" for target help.
 
-MCU          = atmega32u2
+MCU          = at90usb1287
 ARCH         = AVR8
-BOARD        = NONE
-F_CPU        = 16000000
+BOARD        = USBKEY
+F_CPU        = 8000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
-TARGET       = storage
-SRC          = $(TARGET).c descriptors.c lib/dataflashmanager.c lib/scsi.c \
-               lib/flash.c lib/test.c lib/uart.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+TARGET       = virtualserial
+SRC          = $(TARGET).c descriptors.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = third_party/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
@@ -37,7 +33,14 @@ include $(DMBS_LUFA_PATH)/lufa-gcc.mk
 
 # Include common DMBS build system modules
 DMBS_PATH      ?= $(LUFA_PATH)/Build/DMBS/DMBS
+include $(DMBS_PATH)/core.mk
+include $(DMBS_PATH)/cppcheck.mk
+include $(DMBS_PATH)/doxygen.mk
+include $(DMBS_PATH)/dfu.mk
 include $(DMBS_PATH)/gcc.mk
+include $(DMBS_PATH)/hid.mk
+include $(DMBS_PATH)/avrdude.mk
+include $(DMBS_PATH)/atprogram.mk
 
 flash: $(TARGET).hex
 	avrdude -c avrisp -P /dev/ttyACM0 -p m32u2 -b 19200 -U flash:w:$(TARGET).hex

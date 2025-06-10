@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -28,23 +28,34 @@
   this software.
 */
 
-/** \file
- *  \brief Application Configuration Header File
- *
- *  This is a header file which is be used to configure some of
- *  the application's compile time options, as an alternative to
- *  specifying the compile time constants supplied through a
- *  makefile or build system.
- *
- *  For information on what each token does, refer to the
- *  \ref Sec_Options section of the application documentation.
+/*
+ * Edited by Ian Feldman and Grayson Parker
+ * June 2025
  */
 
-#ifndef _APP_CONFIG_H_
-#define _APP_CONFIG_H_
+#ifndef _VIRTUALSERIAL_H_
+#define _VIRTUALSERIAL_H_
 
-    #define TOTAL_LUNS                1
+    /* Includes: */
+        #include <avr/io.h>
+        #include <avr/wdt.h>
+        #include <avr/power.h>
+        #include <avr/interrupt.h>
+        #include <string.h>
+        #include <stdio.h>
 
-    #define DISK_READ_ONLY            false
+        #include "descriptors.h"
+
+        #include <LUFA/Drivers/USB/USB.h>
+
+    /* Function Prototypes: */
+        void SetupHardware(void);
+        void CheckJoystickMovement(void);
+
+        void EVENT_USB_Device_Connect(void);
+        void EVENT_USB_Device_Disconnect(void);
+        void EVENT_USB_Device_ConfigurationChanged(void);
+        void EVENT_USB_Device_ControlRequest(void);
 
 #endif
+

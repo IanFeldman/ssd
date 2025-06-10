@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -108,7 +108,7 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** \name USB Controller Option Masks */
-			//@{
+			/**@{*/
 			/** Sets the USB bus interrupt priority level to be low priority. The USB bus interrupt is used for Start of Frame events, bus suspend
 			 *  and resume events, bus reset events and other events related to the management of the USB bus.
 			 */
@@ -129,7 +129,7 @@
 
 			/** Sets the USB controller to source its clock from the internal PLL. */
 			#define USB_OPT_PLLCLKSRC                 (1 << 3)
-			//@}
+			/**@}*/
 
 			#if !defined(USB_STREAM_TIMEOUT_MS) || defined(__DOXYGEN__)
 				/** Constant for the maximum software timeout period of the USB data stream transfer functions
@@ -147,7 +147,7 @@
 			 *  attached host, ceasing USB communications. If no host is present, this prevents any host from
 			 *  enumerating the device once attached until \ref USB_Attach() is called.
 			 */
-			static inline void USB_Detach(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Detach(void)
 			{
 				USB.CTRLB &= ~USB_ATTACH_bm;
@@ -161,7 +161,7 @@
 			 *  attachment of a device to the host. This is despite the bit being located in the device-mode
 			 *  register and despite the datasheet making no mention of its requirement in host mode.
 			 */
-			static inline void USB_Attach(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Attach(void)
 			{
 				USB.CTRLB |= USB_ATTACH_bm;
@@ -281,19 +281,19 @@
 			#endif
 
 		/* Inline Functions: */
-			static inline void USB_Controller_Enable(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Enable(void)
 			{
 				USB.CTRLA |=  USB_ENABLE_bm;
 			}
 
-			static inline void USB_Controller_Disable(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Disable(void)
 			{
 				USB.CTRLA &= ~USB_ENABLE_bm;
 			}
 
-			static inline void USB_Controller_Reset(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Reset(void)
 			{
 				USB.CTRLA &= ~USB_ENABLE_bm;

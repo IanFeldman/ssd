@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -97,7 +97,7 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** \name USB Controller Option Masks */
-			//@{
+			/**@{*/
 			/** Selects one of the system's main clock oscillators as the input clock to the USB Generic Clock source
 			 *  generation module. This indicates that an external oscillator should be used directly instead of an
 			 *  internal PLL clock source.
@@ -115,7 +115,7 @@
 
 			/** Selects PLL or External Oscillator 1 as the USB Generic Clock source module input clock. */
 			#define USB_OPT_GCLK_CHANNEL_1             (0 << 3)
-			//@}
+			/**@}*/
 
 			#if !defined(USB_STREAM_TIMEOUT_MS) || defined(__DOXYGEN__)
 				/** Constant for the maximum software timeout period of the USB data stream transfer functions
@@ -133,7 +133,7 @@
 			 *
 			 *  \return Boolean \c true if the VBUS line is currently detecting power from a host, \c false otherwise.
 			 */
-			static inline bool USB_VBUS_GetStatus(void) ATTR_WARN_UNUSED_RESULT ATTR_ALWAYS_INLINE;
+			ATTR_WARN_UNUSED_RESULT ATTR_ALWAYS_INLINE
 			static inline bool USB_VBUS_GetStatus(void)
 			{
 				return AVR32_USBB.USBSTA.vbus;
@@ -143,7 +143,7 @@
 			 *  attached host, ceasing USB communications. If no host is present, this prevents any host from
 			 *  enumerating the device once attached until \ref USB_Attach() is called.
 			 */
-			static inline void USB_Detach(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Detach(void)
 			{
 				AVR32_USBB.UDCON.detach = true;
@@ -157,7 +157,7 @@
 			 *  attachment of a device to the host. This is despite the bit being located in the device-mode
 			 *  register and despite the datasheet making no mention of its requirement in host mode.
 			 */
-			static inline void USB_Attach(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Attach(void)
 			{
 				AVR32_USBB.UDCON.detach = false;
@@ -286,43 +286,43 @@
 			#endif
 
 		/* Inline Functions: */
-			static inline void USB_OTGPAD_On(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_OTGPAD_On(void)
 			{
 				AVR32_USBB.USBCON.otgpade = true;
 			}
 
-			static inline void USB_OTGPAD_Off(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_OTGPAD_Off(void)
 			{
 				AVR32_USBB.USBCON.otgpade = false;
 			}
 
-			static inline void USB_CLK_Freeze(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_CLK_Freeze(void)
 			{
 				AVR32_USBB.USBCON.frzclk = true;
 			}
 
-			static inline void USB_CLK_Unfreeze(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_CLK_Unfreeze(void)
 			{
 				AVR32_USBB.USBCON.frzclk = false;
 			}
 
-			static inline void USB_Controller_Enable(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Enable(void)
 			{
 				AVR32_USBB.USBCON.usbe = true;
 			}
 
-			static inline void USB_Controller_Disable(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Disable(void)
 			{
 				AVR32_USBB.USBCON.usbe = false;
 			}
 
-			static inline void USB_Controller_Reset(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Controller_Reset(void)
 			{
 				AVR32_USBB.USBCON.usbe = false;
@@ -330,7 +330,7 @@
 			}
 
 			#if defined(USB_CAN_BE_BOTH)
-			static inline uint8_t USB_GetUSBModeFromUID(void) ATTR_WARN_UNUSED_RESULT ATTR_ALWAYS_INLINE;
+			ATTR_WARN_UNUSED_RESULT ATTR_ALWAYS_INLINE
 			static inline uint8_t USB_GetUSBModeFromUID(void)
 			{
 				if (AVR32_USBB.USBSTA.id)

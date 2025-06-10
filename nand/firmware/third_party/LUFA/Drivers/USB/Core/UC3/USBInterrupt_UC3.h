@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -84,7 +84,7 @@
 			};
 
 		/* Inline Functions: */
-			static inline void USB_INT_Enable(const uint8_t Interrupt) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_INT_Enable(const uint8_t Interrupt)
 			{
 				switch (Interrupt)
@@ -139,7 +139,7 @@
 				}
 			}
 
-			static inline void USB_INT_Disable(const uint8_t Interrupt) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_INT_Disable(const uint8_t Interrupt)
 			{
 				switch (Interrupt)
@@ -194,7 +194,7 @@
 				}
 			}
 
-			static inline void USB_INT_Clear(const uint8_t Interrupt) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_INT_Clear(const uint8_t Interrupt)
 			{
 				switch (Interrupt)
@@ -261,7 +261,7 @@
 				}
 			}
 
-			static inline bool USB_INT_IsEnabled(const uint8_t Interrupt) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline bool USB_INT_IsEnabled(const uint8_t Interrupt)
 			{
 				switch (Interrupt)
@@ -303,7 +303,7 @@
 				}
 			}
 
-			static inline bool USB_INT_HasOccurred(const uint8_t Interrupt) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline bool USB_INT_HasOccurred(const uint8_t Interrupt)
 			{
 				switch (Interrupt)

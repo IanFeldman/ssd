@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -80,7 +80,7 @@
 	/* Public Interface - May be used in end-application: */
 		/* Macros: */
 			/** \name USB Device Mode Option Masks */
-			//@{
+			/**@{*/
 			/** Mask for the Options parameter of the \ref USB_Init() function. This indicates that the
 			 *  USB interface should be initialized in low speed (1.5Mb/s) mode.
 			 *
@@ -98,7 +98,7 @@
 				 */
 				#define USB_DEVICE_OPT_FULLSPEED   (0 << 0)
 			#endif
-			//@}
+			/**@}*/
 
 			#if (!defined(NO_INTERNAL_SERIAL) || defined(__DOXYGEN__))
 				/** String descriptor index for the device's unique serial number string descriptor within the device.
@@ -110,22 +110,25 @@
 				 *  On unsupported devices, this will evaluate to \ref NO_DESCRIPTOR and so will force the host to create a pseudo-serial
 				 *  number for the device.
 				 */
-				#define USE_INTERNAL_SERIAL            0xDC
+				#ifndef USE_INTERNAL_SERIAL
+					#define USE_INTERNAL_SERIAL         0xDC
+				#endif
 
 				/** Length of the device's unique internal serial number, in bits, if present on the selected microcontroller
 				 *  model.
 				 */
-				#define INTERNAL_SERIAL_LENGTH_BITS    (8 * (1 + (offsetof(NVM_PROD_SIGNATURES_t, COORDY1) - offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0))))
+				#define INTERNAL_SERIAL_LENGTH_BITS     (8 * (1 + (offsetof(NVM_PROD_SIGNATURES_t, COORDY1) - offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0))))
 
 				/** Start address of the internal serial number, in the appropriate address space, if present on the selected microcontroller
 				 *  model.
 				 */
-				#define INTERNAL_SERIAL_START_ADDRESS  offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0)
+				#define INTERNAL_SERIAL_START_ADDRESS   offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0)
 			#else
-				#define USE_INTERNAL_SERIAL            NO_DESCRIPTOR
+				#undef	USE_INTERNAL_SERIAL
+				#define USE_INTERNAL_SERIAL             NO_DESCRIPTOR
 
-				#define INTERNAL_SERIAL_LENGTH_BITS    0
-				#define INTERNAL_SERIAL_START_ADDRESS  0
+				#define INTERNAL_SERIAL_LENGTH_BITS     0
+				#define INTERNAL_SERIAL_START_ADDRESS   0
 			#endif
 
 		/* Function Prototypes: */
@@ -156,7 +159,7 @@
 			 *
 			 *  \return Current USB frame number from the USB controller.
 			 */
-			static inline uint16_t USB_Device_GetFrameNumber(void) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline uint16_t USB_Device_GetFrameNumber(void)
 			{
 				return ((USB_EndpointTable_t*)USB.EPPTR)->FrameNum;
@@ -169,7 +172,7 @@
 			 *
 			 *  \note This function is not available when the \c NO_SOF_EVENTS compile time token is defined.
 			 */
-			static inline void USB_Device_EnableSOFEvents(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_EnableSOFEvents(void)
 			{
 				USB.INTCTRLA |=  USB_SOFIE_bm;
@@ -180,7 +183,7 @@
 			 *
 			 *  \note This function is not available when the \c NO_SOF_EVENTS compile time token is defined.
 			 */
-			static inline void USB_Device_DisableSOFEvents(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_DisableSOFEvents(void)
 			{
 				USB.INTCTRLA &= ~USB_SOFIE_bm;
@@ -190,19 +193,19 @@
 	/* Private Interface - For use in library only: */
 	#if !defined(__DOXYGEN__)
 		/* Inline Functions: */
-			static inline void USB_Device_SetLowSpeed(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetLowSpeed(void)
 			{
 				USB.CTRLA &= ~USB_SPEED_bm;
 			}
 
-			static inline void USB_Device_SetFullSpeed(void) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetFullSpeed(void)
 			{
 				USB.CTRLA |=  USB_SPEED_bm;
 			}
 
-			static inline void USB_Device_SetDeviceAddress(const uint8_t Address) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_SetDeviceAddress(const uint8_t Address)
 			{
 				(void)Address;
@@ -210,19 +213,19 @@
 				/* No implementation for XMEGA architecture */
 			}
 
-			static inline void USB_Device_EnableDeviceAddress(const uint8_t Address) ATTR_ALWAYS_INLINE;
+			ATTR_ALWAYS_INLINE
 			static inline void USB_Device_EnableDeviceAddress(const uint8_t Address)
 			{
 				USB.ADDR = Address;
 			}
 
-			static inline bool USB_Device_IsAddressSet(void) ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT;
+			ATTR_ALWAYS_INLINE ATTR_WARN_UNUSED_RESULT
 			static inline bool USB_Device_IsAddressSet(void)
 			{
 				return ((USB.ADDR != 0) ? true : false);
 			}
 
-			static inline void USB_Device_GetSerialString(uint16_t* const UnicodeString) ATTR_NON_NULL_PTR_ARG(1);
+			ATTR_NON_NULL_PTR_ARG(1)
 			static inline void USB_Device_GetSerialString(uint16_t* const UnicodeString)
 			{
 				uint_reg_t CurrentGlobalInt = GetGlobalInterruptMask();

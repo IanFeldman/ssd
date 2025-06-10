@@ -1,13 +1,13 @@
 /*
              LUFA Library
-     Copyright (C) Dean Camera, 2017.
+     Copyright (C) Dean Camera, 2021.
 
   dean [at] fourwalledcubicle [dot] com
            www.lufa-lib.org
 */
 
 /*
-  Copyright 2017  Dean Camera (dean [at] fourwalledcubicle [dot] com)
+  Copyright 2021  Dean Camera (dean [at] fourwalledcubicle [dot] com)
 
   Permission to use, copy, modify, distribute, and sell this
   software and its documentation for any purpose is hereby granted
@@ -283,7 +283,7 @@
 			 *
 			 *  \param[in,out] HIDInterfaceInfo  Pointer to a structure containing a HID Class host configuration and state.
 			 */
-			static inline void HID_Host_USBTask(USB_ClassInfo_HID_Host_t* const HIDInterfaceInfo) ATTR_NON_NULL_PTR_ARG(1);
+			ATTR_NON_NULL_PTR_ARG(1)
 			static inline void HID_Host_USBTask(USB_ClassInfo_HID_Host_t* const HIDInterfaceInfo)
 			{
 				(void)HIDInterfaceInfo;
