@@ -8,7 +8,7 @@
  * col = offset
  */
 
-#define CHIP_COUNT 1
+#define CHIP_COUNT 4
 #define PAGES_PER_BLOCK 64
 #define BLOCKS_PER_CHIP 4096
 

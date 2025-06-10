@@ -181,8 +181,7 @@ void ProcessLine(char *buffer, int size)
         /* usage: help */
         else if (!strcmp(token, HELP_CMD_STR))
         {
-            CDC_Device_SendString(&VirtualSerial_CDC_Interface, "..");
-            SendEsc(NEW_LINE);
+            ProcessHelp();
         }
         else if (!strcmp(token, READ_CMD_STR))
         {
@@ -205,6 +204,46 @@ void ProcessLine(char *buffer, int size)
     SendPrefix();
 }
 
+void ProcessHelp(void)
+{
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "Use this interface to read, write, or erase any portion of memory.");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "There are 4 nand chips, 4k blocks per chip, 64 pages per block, 2k + 64 bytes per page.");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "[row] is a three-byte hex page address (max 0x100000).");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "[column] is a two-byte hex offset within a page (max 0x0840).");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "Commands:");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "  READ");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "    usage: read [row] [column] [size]");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "    [size] is an integer representing number of bytes to read.");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "    Note - will not read past page boundary.");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "  WRITE");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "    usage: write [row] [column] [data]");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "    [data] is one-byte value to be written to memory.");
+    SendEsc(NEW_LINE);
+}
+
 /* Process read line
  * usage: read row col size
  */
@@ -213,43 +252,48 @@ void ProcessRead(void)
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
     char *siz_str = strtok(NULL, " ");
-    /* TODO: check lengths of inputs */
-    if (!col_str || !row_str || !siz_str)
+    /* check data is valid */
+    if (!row_str || !col_str || !siz_str)
     {
         CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
         SendEsc(NEW_LINE);
+        return;
     }
-    else
+    if ((strlen(row_str) != ROW_STR_LEN) || (strlen(col_str) != COL_STR_LEN))
     {
-        uint32_t row = hex_str_to_int(row_str, 6);
-        uint16_t col = hex_str_to_int(col_str, 4);
-        uint16_t siz = (uint16_t)atoi(siz_str);
-
-        /* divide by (64 * 4096) */
-        uint32_t chip = row >> 18;
-        uint16_t chip_row = row - (chip << 18);
-        int chip_id = chip + 1;
-
-        /* read data */
-        flash_enable(chip_id);
-        uint8_t data[siz];
-        flash_read_batch(chip_row, col, chip_id, siz, data);
-        flash_disable(chip_id);
-
-        char byte[4] = { '\0', '\0', ' ', '\0' };
-        int i, j;
-        for (i = 0, j = 0; i < siz; i++, j++)
-        {
-            byte_to_hex_str(data[i], byte);
-            CDC_Device_SendString(&VirtualSerial_CDC_Interface, byte);
-            if (j * strlen(byte) >= TERMINAL_WIDTH)
-            {
-                SendEsc(NEW_LINE);
-                j = -1;
-            }
-        }
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid parameter lengths");
         SendEsc(NEW_LINE);
+        return;
     }
+
+    uint32_t row = hex_str_to_int(row_str, 6);
+    uint16_t col = hex_str_to_int(col_str, 4);
+    uint16_t siz = (uint16_t)atoi(siz_str);
+
+    /* divide by (64 * 4096) */
+    uint32_t chip = row >> 18;
+    uint16_t chip_row = row - (chip << 18);
+    int chip_id = chip + 1;
+
+    /* read data */
+    flash_enable(chip_id);
+    uint8_t data[siz];
+    flash_read_batch(chip_row, col, chip_id, siz, data);
+    flash_disable(chip_id);
+
+    char byte[4] = { '\0', '\0', ' ', '\0' };
+    int i, j;
+    for (i = 0, j = 0; i < siz; i++, j++)
+    {
+        byte_to_hex_str(data[i], byte);
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, byte);
+        if (j * strlen(byte) >= TERMINAL_WIDTH)
+        {
+            SendEsc(NEW_LINE);
+            j = -1;
+        }
+    }
+    SendEsc(NEW_LINE);
 }
 
 /* Process write line
@@ -260,10 +304,17 @@ void ProcessWrite(void)
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
     char *dat_str = strtok(NULL, " ");
-    /* TODO: check lengths of inputs */
-    if (!col_str || !row_str || !dat_str)
+    /* check data is valid */
+    if (!row_str || !col_str || !dat_str)
     {
         CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+        SendEsc(NEW_LINE);
+        return;
+    }
+    if ((strlen(row_str) != ROW_STR_LEN) || (strlen(col_str) != COL_STR_LEN) ||
+       (strlen(dat_str) != DATA_STR_LEN))
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid parameter lengths");
         SendEsc(NEW_LINE);
         return;
     }
@@ -289,10 +340,16 @@ void ProcessWrite(void)
 void ProcessErase(void)
 {
     char *row_str = strtok(NULL, " ");
-    /* TODO: check lengths of inputs */
+    /* check data is valid */
     if (!row_str)
     {
         CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+        SendEsc(NEW_LINE);
+        return;
+    }
+    if (strlen(row_str) != ROW_STR_LEN)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid parameter length");
         SendEsc(NEW_LINE);
         return;
     }

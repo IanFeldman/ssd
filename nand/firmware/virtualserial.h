@@ -45,6 +45,9 @@
 #define ERASE_CMD_STR "erase"
 
 #define TERMINAL_WIDTH 80
+#define COL_STR_LEN 6
+#define ROW_STR_LEN 4
+#define DATA_STR_LEN 2
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -58,6 +61,7 @@
 void SetupHardware(void);
 void Poll(void);
 void ProcessLine(char *buffer, int size);
+void ProcessHelp(void);
 void ProcessRead(void);
 void ProcessWrite(void);
 void ProcessErase(void);
