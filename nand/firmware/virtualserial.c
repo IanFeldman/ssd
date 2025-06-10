@@ -88,9 +88,7 @@ int main(void)
 
     for (;;)
     {
-        /* Must throw away unused bytes from the host, or it will lock up while waiting for the device */
-        CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
-
+        Poll();
         CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
         USB_USBTask();
     }
@@ -117,6 +115,18 @@ void SetupHardware(void)
 
     /* Test flash */
     // test_all();
+}
+
+void Poll(void)
+{
+    int16_t received_byte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
+
+    if (received_byte >= 0)
+    {
+        // Process received byte
+        // Example: Echo it back
+        CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t)received_byte);
+    }
 }
 
 /** Checks for changes in the position of the board joystick, sending strings to the host upon each change. */
@@ -156,16 +166,20 @@ void CheckJoystickMovement(void)
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
+    uart_print_ln("USB Connect");
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
+    uart_print_ln("USB Disconnect");
 }
 
 /** Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
+    uart_print_ln("USB Changed");
+
     bool ConfigSuccess = true;
 
     ConfigSuccess &= CDC_Device_ConfigureEndpoints(&VirtualSerial_CDC_Interface);
