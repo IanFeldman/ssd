@@ -101,7 +101,7 @@ void SetupHardware(void)
     uart_print_esc(HOME_CURSOR);
 
     /* test flash */
-    test_all();
+    // test_all();
 
     /* Check if the Dataflash is working, abort if not */
     if (!(DataflashManager_CheckDataflashOperation()))
@@ -109,9 +109,6 @@ void SetupHardware(void)
         uart_print_ln("Dataflash operation failure");
         for(;;);
     }
-
-    /* Clear Dataflash sector protections, if enabled */
-    DataflashManager_ResetDataflashProtections();
 }
 
 

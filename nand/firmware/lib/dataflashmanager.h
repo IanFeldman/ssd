@@ -46,13 +46,7 @@
     #include <third_party/LUFA/Drivers/USB/USB.h>
     #include <third_party/LUFA/Drivers/Board/Dataflash.h>
 
-    #define BLOCK_USE_SIZE 32
     #define VIRTUAL_MEMORY_BLOCK_SIZE 512
-
-    /* TODO: change these */
-    #define VIRTUAL_MEMORY_BYTES                ((uint32_t)DATAFLASH_PAGES * DATAFLASH_PAGE_SIZE * DATAFLASH_TOTALCHIPS)
-    #define VIRTUAL_MEMORY_BLOCKS               (VIRTUAL_MEMORY_BYTES / VIRTUAL_MEMORY_BLOCK_SIZE)
-    #define LUN_MEDIA_BLOCKS                    (VIRTUAL_MEMORY_BLOCKS / TOTAL_LUNS)
 
     void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo,
                                       const uint32_t BlockAddress,

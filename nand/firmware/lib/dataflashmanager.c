@@ -34,199 +34,169 @@
  */
 
 /*
- * 1. The first page of every block indicates if the block is used or not.
- *      + All 0xFF: unused
- *      + All 0x00: used
- * 2. Receive some data to write from usb.
- * 3. Find the physical block in flash.
- * 4. If that block is unused, just write data to it.
- * 5. If the block is used, read each page individually,
- *    and write it to the next free block (include new page data).
- * 6. Erase the first block and copy it the new one back.
- *      + Ideally we would map logical to physical blocks, but
- *        there is not enough space to do this.
+ * Just use blocks.
+ * virtual os block = physical block
+ * Read and write to first 512 bytes in each block
  */
 
 #define  INCLUDE_FROM_DATAFLASHMANAGER_C
 #include "dataflashmanager.h"
 #include "flash.h"
+#include "uart.h"
 
-static uint8_t page_temp_g[PAGE_SIZE];
-
-/* Check if block is used. Pass in address row and chip. */
-static int BlockUsed(uint32_t block_row, int chip)
-{
-    uint8_t data[BLOCK_USE_SIZE];
-    memset(data, 0x00, BLOCK_USE_SIZE);
-    flash_read_batch(block_row, 0x0000, chip, BLOCK_USE_SIZE, data);
-
-    int used = 0xFF;
-    for (int i = 0; i < BLOCK_USE_SIZE; i++)
-    {
-        used &= data[i];
-    }
-    return !used;
-}
-
-
-/** Writes blocks (OS blocks, not Dataflash pages) to the storage medium, the board Dataflash IC(s), from
- *  the pre-selected data OUT endpoint. This routine reads in OS sized blocks from the endpoint and writes
- *  them to the Dataflash in Dataflash page sized blocks.
- *
- *  \param[in] MSInterfaceInfo  Pointer to a structure containing a Mass Storage Class configuration and state
- *  \param[in] BlockAddress  Data block starting address for the write sequence
- *  \param[in] TotalBlocks   Number of blocks of data to write
- */
 void DataflashManager_WriteBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo,
                                   const uint32_t BlockAddress,
                                   uint16_t TotalBlocks)
 {
-    /* compute absolute byte offset into virtual memory */
-    uint32_t byte_address = BlockAddress * VIRTUAL_MEMORY_BLOCK_SIZE;
-
-    /* compute which usable page (excluding reserved pages) */
-    uint32_t usable_page_index = byte_address / PAGE_SIZE;
-
-    /* determine which block this maps to */
-    uint16_t flash_block = usable_page_index / USABLE_PAGES_PER_BLOCK;
-
-    /* determine which usable page within that block */
-    uint32_t page_in_block = usable_page_index % USABLE_PAGES_PER_BLOCK;
-
-    /* select correct chip (idx at 1) */
-    int chip_id = (flash_block / BLOCKS_PER_CHIP) + 1;
-
-    /* block index within chip */
-    uint16_t block_on_chip = flash_block % BLOCKS_PER_CHIP;
-
-    /* final flash row (add +1 to skip reserved page 0 in each block) */
-    uint32_t page_on_chip = block_on_chip * PAGES_PER_BLOCK + (page_in_block + 1);
-
-    /* final flash column */
-    uint16_t byte_on_page = byte_address % PAGE_SIZE;
-
-    /* enable chip */
-    flash_enable(chip_id);
-
-    /* page of start of the target block */
-    uint32_t target_block_start_page = block_on_chip * PAGES_PER_BLOCK;
-    uint32_t temp_block_start_page   = target_block_start_page;
-
-    /* find free block */
-    while (BlockUsed(temp_block_start_page, chip_id))
+    /* wait until endpoint is ready before continuing */
+    if (Endpoint_WaitUntilReady())
     {
-        temp_block_start_page += PAGES_PER_BLOCK;
+        return;
     }
 
-    /* now we have found a free block */
-    /* if the block we found is different than the target */
-    if (temp_block_start_page != target_block_start_page)
+    uart_print_ln("Writing blocks");
+    for (uint16_t i = 0; i < TotalBlocks; i++)
     {
-        /* copy pages over to this new block */
-        for (int page = 0; page < USABLE_PAGES_PER_BLOCK; page++)
-        {
-            /* start after reserved page */
-            uint32_t old_page = target_block_start_page + page + 1;
-            uint32_t new_page = temp_block_start_page + page + 1;
+        /* calculate the page address */
+        uint32_t block_number = BlockAddress + i;
+        uint32_t page_address = block_number * PAGES_PER_BLOCK;
 
-            /* if this is the page we want to overwrite */
-            if (page == page_in_block)
+        /* find the chip */
+        int chip_id = (block_number / BLOCKS_PER_CHIP) + 1;
+        flash_enable(chip_id);
+
+        /* erase block in flash */
+        flash_erase(page_address, chip_id);
+
+        /* write in 16 byte increments */
+        uint16_t bytes_in_block_div16 = 0;
+        while (bytes_in_block_div16 < (VIRTUAL_MEMORY_BLOCK_SIZE >> 4))
+        {
+            /* check if the endpoint is currently empty */
+            if (!(Endpoint_IsReadWriteAllowed()))
             {
-                /* read new data directly from USB */
-                Endpoint_Read_Stream_LE(page_temp_g, PAGE_SIZE, NULL);
-            }
-            else
-            {
-                /* copy existing page from original block */
-                flash_read_batch(old_page, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
+                    /* clear the current endpoint bank */
+                    Endpoint_ClearOUT();
+
+                    /* wait until the host has sent another packet */
+                    if (Endpoint_WaitUntilReady())
+                    {
+                        flash_disable(chip_id);
+                        uart_print_ln("Aborting command");
+                        return;
+                    }
             }
 
-            /* write page */
-            flash_program(new_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
+            /* read in 16 bytes from endpoint */
+            uint8_t chunk[16];
+            for (uint8_t j = 0; j < 16; j++)
+            {
+                chunk[j] = Endpoint_Read_8();
+            }
+
+            /* program block in flash with new data */
+            flash_program(page_address, bytes_in_block_div16 << 4, chunk, 16, chip_id);
+
+            bytes_in_block_div16++;
+
+            /* check if the current command is being aborted by the host */
+            if (MSInterfaceInfo->State.IsMassStoreReset)
+            {
+                flash_disable(chip_id);
+                uart_print_ln("Aborting command");
+                return;
+            }
         }
 
-        /* erase original block */
-        flash_erase(target_block_start_page, chip_id);
-
-        /* copy temp block back to target*/
-        for (int page = 0; page < USABLE_PAGES_PER_BLOCK; page++)
-        {
-            /* start after reserved page */
-            uint32_t old_page = target_block_start_page + page + 1;
-            uint32_t new_page = temp_block_start_page + page + 1;
-
-            /* read page */
-            flash_read_batch(new_page, 0x0000, chip_id, PAGE_SIZE, page_temp_g);
-            /* write page */
-            flash_program(old_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
-        }
-
-        /* reset temp block */
-        flash_erase(temp_block_start_page, chip_id);
+        flash_disable(chip_id);
     }
-    /* if the block we found is target */
-    else
+
+    if (!(Endpoint_IsReadWriteAllowed()))
     {
-        /* program the exact spot we want to */
-        Endpoint_Read_Stream_LE(page_temp_g, PAGE_SIZE, NULL);
-        flash_program(page_on_chip, byte_on_page, page_temp_g, PAGE_SIZE, chip_id);
-        /* mark the block as used by setting first page to zeros */
-        memset(page_temp_g, 0x00, PAGE_SIZE);
-        flash_program(target_block_start_page, 0x0000, page_temp_g, PAGE_SIZE, chip_id);
+        Endpoint_ClearOUT();
     }
 
-    flash_disable(chip_id);
+    uart_print_ln("Write complete");
 }
 
 
-/** Reads blocks (OS blocks, not Dataflash pages) from the storage medium, the board Dataflash IC(s), into
- *  the pre-selected data IN endpoint. This routine reads in Dataflash page sized blocks from the Dataflash
- *  and writes them in OS sized blocks to the endpoint.
- *
- *  \param[in] MSInterfaceInfo  Pointer to a structure containing a Mass Storage Class configuration and state
- *  \param[in] BlockAddress  Data block starting address for the read sequence
- *  \param[in] TotalBlocks   Number of blocks of data to read
- */
 void DataflashManager_ReadBlocks(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo,
                                  const uint32_t BlockAddress,
                                  uint16_t TotalBlocks)
 {
-    uint8_t buffer[VIRTUAL_MEMORY_BLOCK_SIZE];
-
-    for (int i = 0; i < TotalBlocks; i++)
+    /* wait until endpoint is ready before continuing */
+    if (Endpoint_WaitUntilReady())
     {
-        uint32_t byte_offset = (BlockAddress + i) * VIRTUAL_MEMORY_BLOCK_SIZE;
+        return;
+    }
 
-        uint32_t usable_page_index = byte_offset / PAGE_SIZE;
-        uint16_t flash_block       = usable_page_index / USABLE_PAGES_PER_BLOCK;
-        uint32_t page_in_block     = usable_page_index % USABLE_PAGES_PER_BLOCK;
-        int chip_id                = (flash_block / BLOCKS_PER_CHIP) + 1;
-        uint16_t block_on_chip     = flash_block % BLOCKS_PER_CHIP;
-        uint32_t page_on_chip      = block_on_chip * PAGES_PER_BLOCK + (page_in_block + 1);
-        uint16_t byte_on_page      = byte_offset % PAGE_SIZE;
+    uart_print_ln("Reading blocks");
+    for (uint16_t i = 0; i < TotalBlocks; i++)
+    {
+        /* calculate the page address */
+        uint32_t block_number = BlockAddress + i;
+        uint32_t page_address = block_number * PAGES_PER_BLOCK;
 
+        /* find the chip */
+        int chip_id = (block_number / BLOCKS_PER_CHIP) + 1;
         flash_enable(chip_id);
 
-        flash_read_batch(page_on_chip, byte_on_page, chip_id, VIRTUAL_MEMORY_BLOCK_SIZE, buffer);
-        Endpoint_Write_Stream_LE(buffer, VIRTUAL_MEMORY_BLOCK_SIZE, NULL);
+        /* read in 16 byte increments */
+        uint16_t bytes_in_block_div16 = 0;
+        while (bytes_in_block_div16 < (VIRTUAL_MEMORY_BLOCK_SIZE >> 4))
+        {
+            /* check if the endpoint is currently empty */
+            if (!(Endpoint_IsReadWriteAllowed()))
+            {
+                    /* clear the current endpoint bank */
+                    Endpoint_ClearIN();
+
+                    /* wait until the host has sent another packet */
+                    if (Endpoint_WaitUntilReady())
+                    {
+                        uart_print_ln("Aborting command");
+                        flash_disable(chip_id);
+                        return;
+                    }
+            }
+
+            /* read in 16 bytes from flash */
+            uint8_t chunk[16];
+            flash_read_batch(page_address, bytes_in_block_div16 << 4, chip_id, 16, chunk);
+
+            /* write to endpoint */
+            for (uint8_t j = 0; j < 16; j++)
+            {
+                Endpoint_Write_8(chunk[j]);
+            }
+
+            bytes_in_block_div16++;
+
+            /* check if the current command is being aborted by the host */
+            if (MSInterfaceInfo->State.IsMassStoreReset)
+            {
+                uart_print_ln("Aborting command");
+                flash_disable(chip_id);
+                return;
+            }
+        }
 
         flash_disable(chip_id);
     }
+
+    if (!(Endpoint_IsReadWriteAllowed()))
+    {
+        Endpoint_ClearIN();
+    }
+
+    uart_print_ln("Read complete");
 }
 
 
-/** Disables the Dataflash memory write protection bits on the board Dataflash ICs, if enabled. */
-void DataflashManager_ResetDataflashProtections(void)
-{
-}
-
-
-/** Performs a simple test on the attached Dataflash IC(s) to ensure that they are working.
- *
- *  \return Boolean \c true if all media chips are working, \c false otherwise
- */
+/* Test ICs to make sure they are working */
 bool DataflashManager_CheckDataflashOperation(void)
 {
+    /* TODO */
     return true;
 }
 

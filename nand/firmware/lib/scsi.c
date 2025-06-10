@@ -37,6 +37,7 @@
 
 #define  INCLUDE_FROM_SCSI_C
 #include "scsi.h"
+#include "flash.h"
 
 /** Structure to hold the SCSI response data to a SCSI INQUIRY command. This gives information about the device's
  *  features and capabilities.
@@ -214,7 +215,7 @@ static bool SCSI_Command_Request_Sense(USB_ClassInfo_MS_Device_t* const MSInterf
  */
 static bool SCSI_Command_Read_Capacity_10(USB_ClassInfo_MS_Device_t* const MSInterfaceInfo)
 {
-	uint32_t LastBlockAddressInLUN = (LUN_MEDIA_BLOCKS - 1);
+	uint32_t LastBlockAddressInLUN = MAX_BLOCK_ADDRESS - 1;
 	uint32_t MediaBlockSize        = VIRTUAL_MEMORY_BLOCK_SIZE;
 
 	Endpoint_Write_Stream_BE(&LastBlockAddressInLUN, sizeof(LastBlockAddressInLUN), NULL);
@@ -298,7 +299,7 @@ static bool SCSI_Command_ReadWrite_10(USB_ClassInfo_MS_Device_t* const MSInterfa
 	TotalBlocks  = SwapEndian_16(*(uint16_t*)&MSInterfaceInfo->State.CommandBlock.SCSICommandData[7]);
 
 	/* Check if the block address is outside the maximum allowable value for the LUN */
-	if (BlockAddress >= LUN_MEDIA_BLOCKS)
+	if (BlockAddress >= MAX_BLOCK_ADDRESS)
 	{
 		/* Block address is invalid, update SENSE key and return command fail */
 		SCSI_SET_SENSE(SCSI_SENSE_KEY_ILLEGAL_REQUEST,
