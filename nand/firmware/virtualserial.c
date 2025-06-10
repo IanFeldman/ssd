@@ -113,54 +113,107 @@ void SetupHardware(void)
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
 
+    /* Clear virtual serial */
+    SendEsc(CLEAR_SCREEN);
+    SendEsc(HOME_CURSOR);
+    SendPrefix();
+
     /* Test flash */
     // test_all();
 }
 
 void Poll(void)
 {
-    int16_t received_byte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
+    static char command_buffer[CMD_BUFFER_SIZE];
+    static int i = 0;
 
+    int16_t received_byte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
     if (received_byte >= 0)
     {
-        // Process received byte
-        // Example: Echo it back
-        CDC_Device_SendByte(&VirtualSerial_CDC_Interface, (uint8_t)received_byte);
+        char ch = (char)received_byte;
+
+        /* submit line */
+        if (ch == '\n' || ch == '\r')
+        {
+            ProcessLine(command_buffer, i);
+            i = 0;
+        }
+        /* save to buffer and echo back */
+        else
+        {
+            command_buffer[i++] = ch;
+            CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ch);
+        }
+        /* auto-process if buffer is full */
+        if (i == CMD_BUFFER_SIZE)
+        {
+            ProcessLine(command_buffer, i);
+            i = 0;
+        }
     }
 }
 
-/** Checks for changes in the position of the board joystick, sending strings to the host upon each change. */
-void CheckJoystickMovement(void)
+void ProcessLine(char *buffer, int size)
 {
-    /*
-    uint8_t     JoyStatus_LCL = Joystick_GetStatus();
-    char*       ReportString  = NULL;
-    static bool ActionSent    = false;
+    uart_print_ln("Processing line");
+    SendEsc(NEW_LINE);
+    SendPrefix();
 
-    if (JoyStatus_LCL & JOY_UP)
-      ReportString = "Joystick Up\r\n";
-    else if (JoyStatus_LCL & JOY_DOWN)
-      ReportString = "Joystick Down\r\n";
-    else if (JoyStatus_LCL & JOY_LEFT)
-      ReportString = "Joystick Left\r\n";
-    else if (JoyStatus_LCL & JOY_RIGHT)
-      ReportString = "Joystick Right\r\n";
-    else if (JoyStatus_LCL & JOY_PRESS)
-      ReportString = "Joystick Pressed\r\n";
-    else
-      ActionSent = false;
-
-    if ((ReportString != NULL) && (ActionSent == false))
+    /* split line by spaces */
+    char *token = strtok(buffer, " ");
+    if (token != NULL)
     {
-        ActionSent = true;
+        /* usage: clear */
+        if (!strcmp(token, CLEAR_CMD_STR))
+        {
+            uart_print_ln("CLEAR");
+            SendEsc(CLEAR_SCREEN);
+            SendEsc(HOME_CURSOR);
+            SendPrefix();
+            return;
+        }
+        /* usage: help */
+        if (!strcmp(token, HELP_CMD_STR))
+        {
+            CDC_Device_SendString(&VirtualSerial_CDC_Interface, "USAGE\n");
+            return;
+        }
+        /* usage: read column row size */
+        if (!strcmp(token, READ_CMD_STR))
+        {
+            uart_print_ln("Read");
+            char *column = strtok(NULL, " ");
+            char *row = strtok(NULL, " ");
+            char *size = strtok(NULL, " ");
+            return;
+        }
+        if (!strcmp(token, WRITE_CMD_STR))
+        {
+            return;
+        }
+        if (!strcmp(token, ERASE_CMD_STR))
+        {
+            return;
+        }
 
-        // Write the string to the virtual COM port via the created character stream
-        fputs(ReportString, &USBSerialStream);
-
-        // Alternatively, without the stream:
-        // CDC_Device_SendString(&VirtualSerial_CDC_Interface, ReportString);
+        token = strtok(NULL, " ");
     }
-    */
+    else
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Usage error\n");
+    }
+}
+
+/* Send ANSI escape sequence */
+void SendEsc(char *sequence)
+{
+    CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ESC_CHAR);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface, sequence);
+}
+
+void SendPrefix(void)
+{
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface, PREFIX);
 }
 
 /** Event handler for the library USB Connection event. */

@@ -36,25 +36,32 @@
 #ifndef _VIRTUALSERIAL_H_
 #define _VIRTUALSERIAL_H_
 
-    /* Includes: */
-        #include <avr/io.h>
-        #include <avr/wdt.h>
-        #include <avr/power.h>
-        #include <avr/interrupt.h>
-        #include <string.h>
-        #include <stdio.h>
+#define CMD_BUFFER_SIZE 128
+#define PREFIX " > "
+#define CLEAR_CMD_STR "clear"
+#define HELP_CMD_STR  "help"
+#define READ_CMD_STR  "read"
+#define WRITE_CMD_STR "write"
+#define ERASE_CMD_STR "erase"
 
-        #include "descriptors.h"
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <string.h>
+#include <stdio.h>
+#include "descriptors.h"
+#include <LUFA/Drivers/USB/USB.h>
 
-        #include <LUFA/Drivers/USB/USB.h>
-
-    /* Function Prototypes: */
-        void SetupHardware(void);
-        void Poll(void);
-        void EVENT_USB_Device_Connect(void);
-        void EVENT_USB_Device_Disconnect(void);
-        void EVENT_USB_Device_ConfigurationChanged(void);
-        void EVENT_USB_Device_ControlRequest(void);
+void SetupHardware(void);
+void Poll(void);
+void ProcessLine(char *buffer, int size);
+void SendEsc(char *sequence);
+void SendPrefix(void);
+void EVENT_USB_Device_Connect(void);
+void EVENT_USB_Device_Disconnect(void);
+void EVENT_USB_Device_ConfigurationChanged(void);
+void EVENT_USB_Device_ControlRequest(void);
 
 #endif
 
