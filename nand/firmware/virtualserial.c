@@ -155,6 +155,11 @@ void Poll(void)
             }
             return;
         }
+        /* disregard ansi escapes */
+        if (ch == ESC_CHAR)
+        {
+            return;
+        }
         /* save to buffer and echo back */
         command_buffer[i++] = ch;
         CDC_Device_SendByte(&VirtualSerial_CDC_Interface, ch);
@@ -206,6 +211,7 @@ void ProcessLine(char *buffer, int size)
 
 void ProcessHelp(void)
 {
+    /*
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "Use this interface to read, write, or erase any portion of memory.");
     SendEsc(NEW_LINE);
@@ -218,29 +224,37 @@ void ProcessHelp(void)
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "[column] is a two-byte hex offset within a page (max 0x0840).");
     SendEsc(NEW_LINE);
+    */
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "Commands:");
+        "READ");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "  READ");
+        "  usage: read [row] [column] [size]");
     SendEsc(NEW_LINE);
-    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "    usage: read [row] [column] [size]");
-    SendEsc(NEW_LINE);
+    /*
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "    [size] is an integer representing number of bytes to read.");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "    Note - will not read past page boundary.");
     SendEsc(NEW_LINE);
+    */
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "  WRITE");
+        "WRITE");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "    usage: write [row] [column] [data]");
+        "  usage: write [row] [column] [data]");
     SendEsc(NEW_LINE);
+    /*
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "    [data] is one-byte value to be written to memory.");
+    SendEsc(NEW_LINE);
+    */
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "ERASE");
+    SendEsc(NEW_LINE);
+    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
+        "  usage: erase [row]");
     SendEsc(NEW_LINE);
 }
 

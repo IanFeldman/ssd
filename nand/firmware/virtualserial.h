@@ -45,9 +45,9 @@
 #define ERASE_CMD_STR "erase"
 
 #define TERMINAL_WIDTH 80
-#define COL_STR_LEN 6
-#define ROW_STR_LEN 4
-#define DATA_STR_LEN 2
+#define ROW_STR_LEN 8  /* 0x----   */
+#define COL_STR_LEN 6  /* 0x------ */
+#define DATA_STR_LEN 4 /* 0x--     */
 
 #include <avr/io.h>
 #include <avr/wdt.h>

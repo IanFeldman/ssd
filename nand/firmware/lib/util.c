@@ -8,7 +8,7 @@ uint32_t hex_str_to_int(char *val, int len)
 
     for (int i = 0; i < len; i++)
     {
-        char c = val[i];
+        char c = val[i + 2]; /* skip '0x' */
         uint8_t digit;
 
         if (c >= '0' && c <= '9')
