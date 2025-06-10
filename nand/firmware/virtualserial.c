@@ -213,6 +213,7 @@ void ProcessRead(void)
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
     char *siz_str = strtok(NULL, " ");
+    /* TODO: check lengths of inputs */
     if (!col_str || !row_str || !siz_str)
     {
         CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
@@ -259,6 +260,7 @@ void ProcessWrite(void)
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
     char *dat_str = strtok(NULL, " ");
+    /* TODO: check lengths of inputs */
     if (!col_str || !row_str || !dat_str)
     {
         CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
@@ -281,8 +283,31 @@ void ProcessWrite(void)
     flash_disable(chip_id);
 }
 
+/* Process erase line
+ * usage: erase row
+ */
 void ProcessErase(void)
 {
+    char *row_str = strtok(NULL, " ");
+    /* TODO: check lengths of inputs */
+    if (!row_str)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+        SendEsc(NEW_LINE);
+        return;
+    }
+
+    uint32_t row = hex_str_to_int(row_str, 6);
+
+    /* divide by (64 * 4096) */
+    uint32_t chip = row >> 18;
+    uint16_t chip_row = row - (chip << 18);
+    int chip_id = chip + 1;
+
+    /* erase data */
+    flash_enable(chip_id);
+    flash_erase(chip_row, chip_id);
+    flash_disable(chip_id);
 }
 
 /* Send ANSI escape sequence */
