@@ -4,25 +4,31 @@
 /* Convert hex string to integer (up to 32-bit) */
 uint32_t hex_str_to_int(char *val, int len)
 {
-    int result = 0;
-    int place = 16 ^ (len - 1);
+    uint32_t result = 0;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < len; i++)
     {
         char c = val[i];
+        uint8_t digit;
+
         if (c >= '0' && c <= '9')
         {
-            result += (c - '0') * place;
+            digit = (c - '0');
         }
         else if (c >= 'A' && c <= 'F')
         {
-            result += (c - 'A' + 10) * place;
+            digit = (c - 'A' + 10);
+        }
+        else if (c >= 'a' && c <= 'f')
+        {
+            digit = (c - 'a' + 10);
         }
         else
         {
             return 0;
         }
-        place >>= 4; /* divide by 16 */
+
+        result = (result << 4) | digit;
     }
 
     return result;

@@ -208,7 +208,7 @@ void ProcessLine(char *buffer, int size)
 /* Process read line
  * usage: read row col size
  */
-void ProcessRead()
+void ProcessRead(void)
 {
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
@@ -220,8 +220,8 @@ void ProcessRead()
     }
     else
     {
-        uint32_t row = hex_str_to_int(row_str, 3);
-        uint16_t col = hex_str_to_int(col_str, 2);
+        uint32_t row = hex_str_to_int(row_str, 6);
+        uint16_t col = hex_str_to_int(col_str, 4);
         uint16_t siz = (uint16_t)atoi(siz_str);
 
         /* divide by (64 * 4096) */
@@ -235,7 +235,6 @@ void ProcessRead()
         flash_read_batch(chip_row, col, chip_id, siz, data);
         flash_disable(chip_id);
 
-        /* TODO: function to print out bytes as hex */
         char byte[4] = { '\0', '\0', ' ', '\0' };
         int i, j;
         for (i = 0, j = 0; i < siz; i++, j++)
@@ -252,8 +251,34 @@ void ProcessRead()
     }
 }
 
+/* Process write line
+ * usage: write row col data
+ */
 void ProcessWrite(void)
 {
+    char *row_str = strtok(NULL, " ");
+    char *col_str = strtok(NULL, " ");
+    char *dat_str = strtok(NULL, " ");
+    if (!col_str || !row_str || !dat_str)
+    {
+        CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+        SendEsc(NEW_LINE);
+        return;
+    }
+
+    uint32_t row = hex_str_to_int(row_str, 6);
+    uint16_t col = hex_str_to_int(col_str, 4);
+    uint8_t  dat = hex_str_to_int(dat_str, 2);
+
+    /* divide by (64 * 4096) */
+    uint32_t chip = row >> 18;
+    uint16_t chip_row = row - (chip << 18);
+    int chip_id = chip + 1;
+
+    /* write data */
+    flash_enable(chip_id);
+    flash_program(chip_row, col, &dat, 1, chip_id);
+    flash_disable(chip_id);
 }
 
 void ProcessErase(void)
