@@ -33,10 +33,12 @@
  * June 2025
  */
 
+#include <stdlib.h>
 #include "virtualserial.h"
 #include "lib/flash.h"
 #include "lib/test.h"
 #include "lib/uart.h"
+#include "lib/util.h"
 
 /** LUFA CDC Class driver interface configuration and state information. This structure is
  *  passed to all CDC Class driver functions, so that multiple instances of the same class
@@ -181,12 +183,37 @@ void ProcessLine(char *buffer, int size)
             CDC_Device_SendString(&VirtualSerial_CDC_Interface, "..");
             SendEsc(NEW_LINE);
         }
-        /* usage: read column row size */
+        /* usage: read row col size */
         else if (!strcmp(token, READ_CMD_STR))
         {
-            char *column = strtok(NULL, " ");
-            char *row = strtok(NULL, " ");
-            char *size = strtok(NULL, " ");
+            /* TODO: refactor into function */
+            char *row_str = strtok(NULL, " ");
+            char *col_str = strtok(NULL, " ");
+            char *siz_str = strtok(NULL, " ");
+            if (!col_str || !row_str || !siz_str)
+            {
+                CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Invalid command");
+                SendEsc(NEW_LINE);
+            }
+            else
+            {
+                uint32_t row = hex_str_to_int(row_str, 3);
+                uint16_t col = hex_str_to_int(col_str, 2);
+                uint16_t siz = (uint16_t)atoi(siz_str);
+
+                /* TODO: determine chip */
+                int chip = 1;
+
+                /* read data */
+                flash_enable(chip);
+                uint8_t data[siz];
+                flash_read_batch(row, col, chip, siz, data);
+                flash_disable(chip);
+
+                /* TODO: function to print out bytes as hex */
+                CDC_Device_SendString(&VirtualSerial_CDC_Interface, "Read data!");
+                SendEsc(NEW_LINE);
+            }
         }
         else if (!strcmp(token, WRITE_CMD_STR))
         {

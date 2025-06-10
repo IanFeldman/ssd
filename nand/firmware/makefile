@@ -20,7 +20,7 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = virtualserial
 SRC          = $(TARGET).c descriptors.c lib/flash.c lib/test.c lib/uart.c \
-               $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+               lib/util.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = third_party/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
