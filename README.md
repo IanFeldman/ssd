@@ -2,7 +2,7 @@
 2025 Cal Poly EE/CPE senior project exploring nonvolatile flash storage. Includes a [prototype design](#nor) using an 8051 and small NOR flash IC and the [final design](#nand) with a modern Atmel microcontroller and multiple high-density NAND flash ICs on a custom PCB.
 
 ## nand
-4Gb NAND flash memory board with virtual serial interface over USB. Supports default and RAID 1 configurations.
+2Gib NAND flash memory board with virtual serial interface over USB. Supports default and RAID 1 configurations.
 
 ### Firmware Build and Flash Instructions (Linux)
 ```sh
