@@ -43,3 +43,9 @@ void byte_to_hex_str(uint8_t val, char *res)
     res[1] = "0123456789ABCDEF"[val & 0x0F];
 }
 
+/* Return minimum of a and b */
+unsigned int min(unsigned int a, unsigned int b)
+{
+    return (a < b) ? a : b;
+}
+

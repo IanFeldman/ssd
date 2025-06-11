@@ -44,6 +44,8 @@
 #define WRITE_CMD_STR "write"
 #define ERASE_CMD_STR "erase"
 
+#define MAX_READ_SIZE 256 /* size of read buffer */
+
 #define TERMINAL_WIDTH 80
 #define ROW_STR_LEN 8  /* 0x----   */
 #define COL_STR_LEN 6  /* 0x------ */

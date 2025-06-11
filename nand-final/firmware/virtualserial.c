@@ -325,25 +325,37 @@ void ProcessRead(void)
     /* flash_pulse_debug(); */
 
     /* read data */
+    uint8_t data[MAX_READ_SIZE];
+    char byte[4] = { '\0', '\0', ' ', '\0' };
+    int curr_width = 0;
     flash_enable(chip_id);
-    uint8_t data[siz];
-    flash_read_batch(chip_row, col, chip_id, siz, data);
+    /* do it in multiple batches if necessary */
+    int bytes_read = 0;
+    while (bytes_read < siz)
+    {
+        /* read */
+        int bytes_to_read = min(siz - bytes_read, MAX_READ_SIZE);
+        flash_read_batch(chip_row, col + bytes_read, chip_id, bytes_to_read, data);
+
+        /* print */
+        for (int i = 0; i < bytes_to_read; i++)
+        {
+            byte_to_hex_str(data[i], byte);
+            CDC_Device_SendString(&VirtualSerial_CDC_Interface, byte);
+            curr_width += 3; /* write three characters for each byte */
+            if (curr_width >= TERMINAL_WIDTH)
+            {
+                SendEsc(NEW_LINE);
+                curr_width = 0;
+            }
+        }
+
+        bytes_read += bytes_to_read;
+    }
     flash_disable(chip_id);
 
     /* flash_pulse_debug(); */
 
-    char byte[4] = { '\0', '\0', ' ', '\0' };
-    int i, j;
-    for (i = 0, j = 0; i < siz; i++, j++)
-    {
-        byte_to_hex_str(data[i], byte);
-        CDC_Device_SendString(&VirtualSerial_CDC_Interface, byte);
-        if (j * strlen(byte) >= TERMINAL_WIDTH)
-        {
-            SendEsc(NEW_LINE);
-            j = -1;
-        }
-    }
     SendEsc(NEW_LINE);
 
     #ifdef RAID
