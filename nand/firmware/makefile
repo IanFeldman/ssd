@@ -25,6 +25,15 @@ LUFA_PATH    = third_party/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
 
+# Add command line support for uart and raid
+ifeq ($(UART),1)
+CC_FLAGS += -DUART
+endif
+
+ifeq ($(RAID),1)
+CC_FLAGS += -DRAID
+endif
+
 # Default target
 all:
 

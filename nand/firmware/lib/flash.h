@@ -17,8 +17,13 @@
 */
 
 #define CHIP_COUNT 4
-#define ROW_MAX 0x100000
 #define COL_MAX 0x0800 /* ignore 64 byte padding */
+
+#ifdef RAID
+#define ROW_MAX 0x040000
+#else
+#define ROW_MAX 0x100000
+#endif
 
 /* port c, active low, outputs */
 #define CHIP_ENABLE_1     (1 << PC2)

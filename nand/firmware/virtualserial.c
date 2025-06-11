@@ -208,45 +208,40 @@ void ProcessLine(char *buffer, int size)
 
 void ProcessHelp(void)
 {
-    /*
+    /* raid info */
+    #ifdef RAID
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "Use this interface to read, write, or erase any portion of memory.");
+        "RAID 1 enabled");
     SendEsc(NEW_LINE);
+    #else
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "There are 4 nand chips, 4k blocks per chip, 64 pages per block, 2k bytes per page.");
+        "RAID 1 disabled");
     SendEsc(NEW_LINE);
+    #endif
+
+    /* uart info */
+    #ifdef UART
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "[row] is a three-byte hex page address (max 0x100000).");
+        "UART enabled");
     SendEsc(NEW_LINE);
+    #else
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "[column] is a two-byte hex offset within a page (max 0x0800).");
+        "UART disabled");
     SendEsc(NEW_LINE);
-    */
+    #endif
+
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "READ");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "  usage: read [row] [column] [size]");
     SendEsc(NEW_LINE);
-    /*
-    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "    [size] is an integer representing number of bytes to read.");
-    SendEsc(NEW_LINE);
-    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "    Note - will not read past page boundary.");
-    SendEsc(NEW_LINE);
-    */
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "WRITE");
     SendEsc(NEW_LINE);
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "  usage: write [row] [column] [data]");
     SendEsc(NEW_LINE);
-    /*
-    CDC_Device_SendString(&VirtualSerial_CDC_Interface,
-        "    [data] is one-byte value to be written to memory.");
-    SendEsc(NEW_LINE);
-    */
     CDC_Device_SendString(&VirtualSerial_CDC_Interface,
         "ERASE");
     SendEsc(NEW_LINE);
@@ -260,6 +255,9 @@ void ProcessHelp(void)
  */
 void ProcessRead(void)
 {
+    #ifdef RAID
+    static int chip_id = 1;
+    #endif
     char *row_str = strtok(NULL, " ");
     char *col_str = strtok(NULL, " ");
     char *siz_str = strtok(NULL, " ");
@@ -304,10 +302,14 @@ void ProcessRead(void)
         siz = max_size;
     }
 
+    #ifdef RAID
+    uint16_t chip_row = row;
+    #else
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
+    #endif
 
     /* keep usb alive */
     USB_USBTask();
@@ -331,6 +333,15 @@ void ProcessRead(void)
         }
     }
     SendEsc(NEW_LINE);
+
+    #ifdef RAID
+    /* move on to next chip */
+    chip_id += 1;
+    if (chip_id > CHIP_COUNT)
+    {
+        chip_id = 1;
+    }
+    #endif
 }
 
 /* Process write line
@@ -374,18 +385,27 @@ void ProcessWrite(void)
         return;
     }
 
+    /* keep usb alive */
+    USB_USBTask();
+
+    #ifdef RAID
+    /* write data to all chips */
+    for (int chip_id = 1; chip_id <= CHIP_COUNT; chip_id++)
+    {
+        flash_enable(chip_id);
+        flash_program(row, col, &dat, 1, chip_id);
+        flash_disable(chip_id);
+    }
+    #else
+    /* write data to single chip */
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
-
-    /* keep usb alive */
-    USB_USBTask();
-
-    /* write data */
     flash_enable(chip_id);
     flash_program(chip_row, col, &dat, 1, chip_id);
     flash_disable(chip_id);
+    #endif
 }
 
 /* Process erase line
@@ -423,18 +443,27 @@ void ProcessErase(void)
         return;
     }
 
+    /* keep usb alive */
+    USB_USBTask();
+
+    #ifdef RAID
+    /* erase on all chips */
+    for (int chip_id = 1; chip_id <= CHIP_COUNT; chip_id++)
+    {
+        flash_enable(chip_id);
+        flash_erase(row, chip_id);
+        flash_disable(chip_id);
+    }
+    #else
+    /* erase on single chip */
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
     uint16_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
-
-    /* keep usb alive */
-    USB_USBTask();
-
-    /* erase data */
     flash_enable(chip_id);
     flash_erase(chip_row, chip_id);
     flash_disable(chip_id);
+    #endif
 }
 
 /* Return 0 if string has 0x or 0X at start, 1 if not */
