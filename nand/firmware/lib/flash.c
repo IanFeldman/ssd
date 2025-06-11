@@ -270,3 +270,17 @@ void flash_erase(uint32_t row, int chip)
     wait_ready(chip);
 }
 
+
+/* Pull PD2 down temporarily. Used to measure read/write timing.
+ * Don't call unless testig - can interfere with chip 2 control signals. */
+void flash_pulse_debug(void)
+{
+    /* set PD2 as output */
+    DDRD |= READY_BUSY_DIR_2;
+    PORTD &= ~(1 << READY_BUSY_2); /* set low */
+    _delay_us(10);
+    /* set PD2 back to input w/o pullup (default) */
+    DDRD &= ~(READY_BUSY_DIR_2);
+    PORTD &= ~(READY_BUSY_2);
+}
+

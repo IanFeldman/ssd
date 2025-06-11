@@ -314,11 +314,15 @@ void ProcessRead(void)
     /* keep usb alive */
     USB_USBTask();
 
+    /* flash_pulse_debug(); */
+
     /* read data */
     flash_enable(chip_id);
     uint8_t data[siz];
     flash_read_batch(chip_row, col, chip_id, siz, data);
     flash_disable(chip_id);
+
+    /* flash_pulse_debug(); */
 
     char byte[4] = { '\0', '\0', ' ', '\0' };
     int i, j;
@@ -388,6 +392,8 @@ void ProcessWrite(void)
     /* keep usb alive */
     USB_USBTask();
 
+    /* flash_pulse_debug(); */
+
     #ifdef RAID
     /* write data to all chips */
     for (int chip_id = 1; chip_id <= CHIP_COUNT; chip_id++)
@@ -406,6 +412,8 @@ void ProcessWrite(void)
     flash_program(chip_row, col, &dat, 1, chip_id);
     flash_disable(chip_id);
     #endif
+
+    /* flash_pulse_debug(); */
 }
 
 /* Process erase line
@@ -446,6 +454,8 @@ void ProcessErase(void)
     /* keep usb alive */
     USB_USBTask();
 
+    /* flash_pulse_debug(); */
+
     #ifdef RAID
     /* erase on all chips */
     for (int chip_id = 1; chip_id <= CHIP_COUNT; chip_id++)
@@ -464,6 +474,8 @@ void ProcessErase(void)
     flash_erase(chip_row, chip_id);
     flash_disable(chip_id);
     #endif
+
+    /* flash_pulse_debug(); */
 }
 
 /* Return 0 if string has 0x or 0X at start, 1 if not */

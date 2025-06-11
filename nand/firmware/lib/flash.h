@@ -80,5 +80,7 @@ void flash_program(uint32_t row, uint16_t column,
     uint8_t *data, int size, int chip);
 void flash_erase(uint32_t row, int chip);
 
+void flash_pulse_debug(void);
+
 #endif /* FLASH_H */
 
