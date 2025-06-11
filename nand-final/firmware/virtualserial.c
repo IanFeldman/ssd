@@ -96,6 +96,7 @@ int main(void)
     }
 }
 
+
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
@@ -121,6 +122,8 @@ void SetupHardware(void)
     SendPrefix();
 }
 
+
+/* Poll for user input. */
 void Poll(void)
 {
     static char command_buffer[CMD_BUFFER_SIZE];
@@ -163,6 +166,8 @@ void Poll(void)
     }
 }
 
+
+/* Process input string. */
 void ProcessLine(char *buffer, int size)
 {
     SendEsc(NEW_LINE);
@@ -206,6 +211,8 @@ void ProcessLine(char *buffer, int size)
     SendPrefix();
 }
 
+
+/* Process help command. */
 void ProcessHelp(void)
 {
     /* raid info */
@@ -250,7 +257,8 @@ void ProcessHelp(void)
     SendEsc(NEW_LINE);
 }
 
-/* Process read line
+
+/* Process read command.
  * usage: read row col size
  */
 void ProcessRead(void)
@@ -348,7 +356,8 @@ void ProcessRead(void)
     #endif
 }
 
-/* Process write line
+
+/* Process write command.
  * usage: write row col data
  */
 void ProcessWrite(void)
@@ -416,7 +425,8 @@ void ProcessWrite(void)
     /* flash_pulse_debug(); */
 }
 
-/* Process erase line
+
+/* Process erase command.
  * usage: erase row
  */
 void ProcessErase(void)
@@ -478,6 +488,7 @@ void ProcessErase(void)
     /* flash_pulse_debug(); */
 }
 
+
 /* Return 0 if string has 0x or 0X at start, 1 if not */
 int CheckHexPrefix(char *str)
 {
@@ -490,6 +501,7 @@ int CheckHexPrefix(char *str)
     return !(first && second);
 }
 
+
 /* Send ANSI escape sequence */
 void SendEsc(char *sequence)
 {
@@ -497,12 +509,15 @@ void SendEsc(char *sequence)
     CDC_Device_SendString(&VirtualSerial_CDC_Interface, sequence);
 }
 
+
+/* Send '>' character. */
 void SendPrefix(void)
 {
     CDC_Device_SendString(&VirtualSerial_CDC_Interface, PREFIX);
 }
 
-/** Event handler for the library USB Connection event. */
+
+/* Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
     #ifdef UART
@@ -510,7 +525,8 @@ void EVENT_USB_Device_Connect(void)
     #endif
 }
 
-/** Event handler for the library USB Disconnection event. */
+
+/* Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
     #ifdef UART
@@ -518,7 +534,8 @@ void EVENT_USB_Device_Disconnect(void)
     #endif
 }
 
-/** Event handler for the library USB Configuration Changed event. */
+
+/* Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
     #ifdef UART
@@ -530,13 +547,15 @@ void EVENT_USB_Device_ConfigurationChanged(void)
     ConfigSuccess &= CDC_Device_ConfigureEndpoints(&VirtualSerial_CDC_Interface);
 }
 
-/** Event handler for the library USB Control Request reception event. */
+
+/* Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
     CDC_Device_ProcessControlRequest(&VirtualSerial_CDC_Interface);
 }
 
-/** CDC class driver callback function the processing of changes to the virtual
+
+/*  CDC class driver callback function the processing of changes to the virtual
  *  control lines sent from the host..
  *
  *  \param[in] CDCInterfaceInfo  Pointer to the CDC class interface configuration structure being referenced
@@ -553,3 +572,4 @@ void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t *const C
 
     (void)HostReady;
 }
+
