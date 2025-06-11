@@ -107,21 +107,18 @@ void SetupHardware(void)
     clock_prescale_set(clock_div_1);
 
     /* Hardware Initialization */
+    #ifdef UART
     uart_init();
-    flash_init();
-    USB_Init();
-
-    /* Clear uart terminal */
     uart_print_esc(CLEAR_SCREEN);
     uart_print_esc(HOME_CURSOR);
+    #endif
+    flash_init();
+    USB_Init();
 
     /* Clear virtual serial */
     SendEsc(CLEAR_SCREEN);
     SendEsc(HOME_CURSOR);
     SendPrefix();
-
-    /* Test flash */
-    // test_all();
 }
 
 void Poll(void)
@@ -467,19 +464,25 @@ void SendPrefix(void)
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
+    #ifdef UART
     uart_print_ln("USB Connect");
+    #endif
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
+    #ifdef UART
     uart_print_ln("USB Disconnect");
+    #endif
 }
 
 /** Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-    uart_print_ln("USB Changed");
+    #ifdef UART
+    uart_print_ln("USB Config Changed");
+    #endif
 
     bool ConfigSuccess = true;
 

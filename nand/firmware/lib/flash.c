@@ -143,7 +143,9 @@ void flash_init(void)
     /* set flash ctrl pints to default values */
     PORTD |= READ_ENABLE | WRITE_ENABLE | WRITE_PROT;
     PORTD &= ~(ADDR_LATCH | CMD_LATCH);
+    #ifdef UART
     uart_print_ln("Flash control pins initialized");
+    #endif
 
     /* reset all chips */
     for (int i = 1; i <= CHIP_COUNT; i++)
@@ -152,9 +154,13 @@ void flash_init(void)
         command_cycle(RESET_CMD);
         wait_ready(i);
         flash_disable(i);
+        #ifdef UART
         uart_print("Reset NAND chip ");
         uart_print_hex(i);
         uart_print_esc(NEW_LINE);
+        #else
+        _delay_us(500);
+        #endif
     }
 }
 
