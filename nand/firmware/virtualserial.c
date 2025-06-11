@@ -303,11 +303,11 @@ void ProcessRead(void)
     }
 
     #ifdef RAID
-    uint16_t chip_row = row;
+    uint32_t chip_row = row;
     #else
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
-    uint16_t chip_row = row - (chip << 18);
+    uint32_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
     #endif
 
@@ -336,7 +336,7 @@ void ProcessRead(void)
 
     #ifdef RAID
     /* move on to next chip */
-    chip_id += 1;
+    chip_id++;
     if (chip_id > CHIP_COUNT)
     {
         chip_id = 1;
@@ -400,7 +400,7 @@ void ProcessWrite(void)
     /* write data to single chip */
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
-    uint16_t chip_row = row - (chip << 18);
+    uint32_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
     flash_enable(chip_id);
     flash_program(chip_row, col, &dat, 1, chip_id);
@@ -458,7 +458,7 @@ void ProcessErase(void)
     /* erase on single chip */
     /* divide by (64 * 4096) */
     uint32_t chip = row >> 18;
-    uint16_t chip_row = row - (chip << 18);
+    uint32_t chip_row = row - (chip << 18);
     int chip_id = chip + 1;
     flash_enable(chip_id);
     flash_erase(chip_row, chip_id);
