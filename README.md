@@ -1,7 +1,7 @@
 # ssd
-2025 Cal Poly EE/CPE senior project exploring nonvolatile flash storage. Includes a [prototype design](#nor) using an 8051 and small NOR flash IC and the [final design](#nand) with a modern Atmel microcontroller and multiple high-density NAND flash ICs on a custom PCB.
+2025 Cal Poly EE/CPE senior project exploring nonvolatile flash storage. Includes a [prototype design](#nor-prototype-2) using an 8051 and small NOR flash IC and the [final design](#nand-final) with a modern Atmel microcontroller and multiple high-density NAND flash ICs on a custom PCB.
 
-## nand
+## nand-final
 2Gib NAND flash memory board with virtual serial interface over USB. Supports default and RAID 1 configurations.
 
 ### Firmware Build and Flash Instructions (Linux)
@@ -11,7 +11,7 @@ sudo apt install gcc-avr avr-libc avrdude make
 
 # Clone this repo
 git clone https://github.com/IanFeldman/ssd.git
-cd ssd/nand/firmware
+cd ssd/nand-final/firmware
 
 # Burn fuses (first time only)
 make fuses
@@ -78,7 +78,7 @@ Note:
 - ```[size]``` is a decimal unsigned integer.
 
 
-## nor
+## nor-prototype-2
 Prototype breadboard 512kB flash memory storage device. Interface over UART at 9600 baud. Compile with SDCC and program with avrdude. See hardware schematic for hardware details.
 
 ### Firmware Build and Flash Instructions (Linux)
@@ -88,7 +88,7 @@ sudo apt install sdcc
 
 # Clone this repo
 git clone https://github.com/IanFeldman/ssd.git
-cd ssd/nor/firmware
+cd ssd/nor-prototype-2/firmware
 
 # Compile and flash firmware using ISP
 make
@@ -107,3 +107,6 @@ Connect a serial cable to ```RXD``` and ```TXD``` on the microcontroller. Open a
 Where:
 - ```[address]``` is 3 hex bytes
 - ```[data]``` is one hex byte
+
+## nor-prototype-1
+Flash memory controller prototype.
