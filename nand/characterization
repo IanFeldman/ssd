@@ -1,0 +1,18 @@
+Power consumption:
+    Idle: 80.135mW (5V, 16.027mA)
+
+Operation Time:
+    (DEFAULT)
+    Read 1 byte: 57 us (scope_50)
+    Read 100 bytes: 248 us (scope_51)
+    Program 1 byte: 203 us (scope_52)
+    Block Erase:  427 us (scope_53)
+
+    (RAID 1)
+    Read 1 byte: 57 us (scope_46)
+    Read 100 bytes: 248 us (scope_47)
+    Program 1 byte: 629 us (scope_48)
+    Block Erase: 1.303 ms (scope_49)
+
+Clock Speed: 20MHz
+
